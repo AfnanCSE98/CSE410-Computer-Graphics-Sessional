@@ -29,6 +29,29 @@ struct point
 
 point pos , L , U , R;
 
+point rotateVec(point p , point ref , bool clockwise , int deg){
+	// cross product
+	point temp;
+	temp.x = p.y * ref.z - p.z * ref.y;
+    temp.y = p.z * ref.x - p.x * ref.z;
+    temp.z = p.x * ref.y - p.y * ref.x;
+
+	double ang;
+	if(clockwise){
+		ang = (pi * deg) / 180;
+	}
+	else{
+		ang = - (pi * deg) / 180;
+	}
+
+	point new_;
+	new_.x = p.x * cos(ang) + temp.x * sin(ang);
+    new_.y = p.y * cos(ang) + temp.y * sin(ang);
+    new_.z = p.z * cos(ang) + temp.z * sin(ang);
+
+	return new_;
+}
+
 void drawAxes()
 {
 	if(drawaxes==1)
@@ -74,20 +97,6 @@ void drawGrid()
 
 int x = 100 ;
 int y = 80 ;
-
-void poly(){
-    glBegin(GL_POLYGON);
-    glColor3f(0.0,0, 1.0) ;
-    glVertex2d(x, 0+y) ;
-    glVertex2d(x+30, 0+y) ;
-    
-    glColor3f(1.0,0, 1.0) ;
-    glVertex2d(x+30, 30+y) ;
-    
-    glColor3f(0.0,1.0, 1.0) ;
-    glVertex2d(x, 30+y) ;
-    glEnd() ;
-}
 
 
 void drawSquare(double a)
@@ -223,20 +232,6 @@ void drawSS()
     drawSquare(5);
 }
 
-void look_left(){
-	L = rotateVec(L , U , false , rotate_deg);
-	R = rotateVec(R , U , false , rotate_deg);
-}
-
-void look_right(){
-	R = rotateVec(R , U , true , rotate_deg);
-	L = rotateVec(L , U , true , rotate_deg);
-}
-
-void look_up(){
-
-}
-
 void keyboardListener(unsigned char key, int x,int y){
 	switch(key){
 
@@ -266,14 +261,14 @@ void keyboardListener(unsigned char key, int x,int y){
 
 		case '5':
 		// tilt clockwise
-			R = rotation3D(R, L, false , rotate_deg);
-    		U = rotation3D(U, L, false , rotate_deg);
+			R = rotateVec(R, L, false , rotate_deg);
+    		U = rotateVec(U, L, false , rotate_deg);
 			break;
 
 		case '6':
 		// tilt anticlockwise
-			R = rotation3D(R, L, true , rotate_deg);
-    		U = rotation3D(U, L, true , rotate_deg);
+			R = rotateVec(R, L, true , rotate_deg);
+    		U = rotateVec(U, L, true , rotate_deg);
 			break;
 
 		default:
@@ -281,26 +276,51 @@ void keyboardListener(unsigned char key, int x,int y){
 	}
 }
 
+point add(point p1 , point p2){
+	
+	point tmp;
+	
+	tmp.x = p1.x + p2.x;
+	tmp.y = p1.y + p2.y;
+	tmp.z = p1.z + p2.z;
+
+	return tmp;
+}
+
+
+point sub(point p1 , point p2){
+	
+	point tmp;
+	
+	tmp.x = p1.x - p2.x;
+	tmp.y = p1.y - p2.y;
+	tmp.z = p1.z - p2.z;
+
+	return tmp;
+}
+
 
 void specialKeyListener(int key, int x,int y){
 	switch(key){
 		case GLUT_KEY_DOWN:		//down arrow key
-			cameraHeight -= 3.0;
+			pos = sub(pos , L);
 			break;
 		case GLUT_KEY_UP:		// up arrow key
-			cameraHeight += 3.0;
+			pos = add(pos , L);
 			break;
 
 		case GLUT_KEY_RIGHT:
-			cameraAngle += 0.03;
+			pos = add(pos , R);
 			break;
 		case GLUT_KEY_LEFT:
-			cameraAngle -= 0.03;
+			pos = sub(pos , L);
 			break;
 
 		case GLUT_KEY_PAGE_UP:
+			pos = add(pos , U);
 			break;
 		case GLUT_KEY_PAGE_DOWN:
+			pos = sub(pos , U);
 			break;
 
 		case GLUT_KEY_INSERT:
@@ -345,28 +365,6 @@ void timer(int sec){
 	y = (y-20) % 50;
 }
 
-void rotateVec(point p , point ref , bool clockwise , int deg){
-	// cross product
-	point temp;
-	temp.x = p.y * ref.z - p.z * ref.y;
-    temp.y = p.z * ref.x - p.x * ref.z;
-    temp.z = p.x * ref.y - p.y * ref.x;
-
-	double ang;
-	if(clockwise){
-		ang = (pi * deg) / 180;
-	}
-	else{
-		ang = - (pi * deg) / 180;
-	}
-
-	point new_;
-	new_.x = p.x * cos(ang) + temp.x * sin(ang);
-    new_.y = p.y * cos(ang) + temp.y * sin(ang);
-    new_.z = p.z * cos(ang) + temp.z * sin(ang);
-
-	return new_;
-}
 
 void display(){
 
@@ -410,8 +408,8 @@ void display(){
     //drawSquare(10);
 
     //drawSS();
-	poly();
-    //drawCircle(30,24);
+	//poly();
+    drawCircle(30,24);
 
     //drawCone(20,50,24);
 
