@@ -28,6 +28,7 @@ struct point
 };
 
 point pos , L , U , R;
+point corner[4];
 
 point rotateVec(point p , point ref , bool clockwise , int deg){
 	// cross product
@@ -54,6 +55,8 @@ point rotateVec(point p , point ref , bool clockwise , int deg){
 
 void drawAxes()
 {
+	glPushMatrix();
+
 	if(drawaxes==1)
 	{
 		glColor3f(0.0, 1.0, 1.0);
@@ -67,6 +70,7 @@ void drawAxes()
 			glVertex3f(0,0, 100);
 			glVertex3f(0,0,-100);
 		}glEnd();
+		glPopMatrix();
 	}
 }
 
@@ -164,45 +168,192 @@ void drawCone(double radius,double height,int segments)
 }
 
 
-void drawSphere(double radius,int slices,int stacks)
+void drawSphere_part(double radius,int slices,int stacks)
 {
-	struct point points[100][100];
+	struct point points[stacks+1][slices+1];
 	int i,j;
 	double h,r;
 	//generate points
+	//stacks : # of polygons
+	//slices : # of sides of each polygon
 	for(i=0;i<=stacks;i++)
 	{
 		h=radius*sin(((double)i/(double)stacks)*(pi/2));
 		r=radius*cos(((double)i/(double)stacks)*(pi/2));
 		for(j=0;j<=slices;j++)
 		{
-			points[i][j].x=r*cos(((double)j/(double)slices)*2*pi);
-			points[i][j].y=r*sin(((double)j/(double)slices)*2*pi);
+			points[i][j].x=r*cos(((double)j/(double)slices)*0.5*pi);
+			points[i][j].y=r*sin(((double)j/(double)slices)*0.5*pi);
 			points[i][j].z=h;
 		}
 	}
 	//draw quads using generated points
 	for(i=0;i<stacks;i++)
 	{
-        glColor3f((double)i/(double)stacks,(double)i/(double)stacks,(double)i/(double)stacks);
+        glColor3f(1, 0, 0);
 		for(j=0;j<slices;j++)
 		{
 			glBegin(GL_QUADS);{
-			    //upper hemisphere
 				glVertex3f(points[i][j].x,points[i][j].y,points[i][j].z);
 				glVertex3f(points[i][j+1].x,points[i][j+1].y,points[i][j+1].z);
 				glVertex3f(points[i+1][j+1].x,points[i+1][j+1].y,points[i+1][j+1].z);
 				glVertex3f(points[i+1][j].x,points[i+1][j].y,points[i+1][j].z);
-                //lower hemisphere
-                glVertex3f(points[i][j].x,points[i][j].y,-points[i][j].z);
-				glVertex3f(points[i][j+1].x,points[i][j+1].y,-points[i][j+1].z);
-				glVertex3f(points[i+1][j+1].x,points[i+1][j+1].y,-points[i+1][j+1].z);
-				glVertex3f(points[i+1][j].x,points[i+1][j].y,-points[i+1][j].z);
+                
 			}glEnd();
 		}
 	}
+	glPopMatrix();
 }
 
+void drawCylinder_part(double radius, double height, int segments){
+	glPushMatrix();
+	point p[segments+1];
+	double angle;
+
+	for(int i=0 ; i<=segments ; i++){
+		angle = ((double)(i) / (double)(segments)) * pi * 0.5;
+		 p[i].x = radius * cos(angle);
+        p[i].y = radius * sin(angle);
+        p[i].z = height;
+	}
+
+	for(int i=0 ; i<segments ; i++){
+		
+		glBegin(GL_QUADS);
+        glVertex3f(p[i].x, p[i].y, p[i].z);
+        glVertex3f(p[i + 1].x, p[i + 1].y, p[i + 1].z);
+        glVertex3f(p[i + 1].x, p[i + 1].y, -p[i + 1].z);
+        glVertex3f(p[i].x, p[i].y, -p[i].z);
+
+        glEnd();
+	}
+
+	 glPopMatrix();
+}
+
+void drawCube_part(int s){
+	int a = s / 2;
+    glBegin(GL_QUADS);
+    glVertex3f(a, a, 0);
+    glVertex3f(a, -a, 0);
+    glVertex3f(-a, -a, 0);
+    glVertex3f(-a, a, 0);
+    glEnd();
+}
+
+void CubeSphere(double side, double radius, int segments)
+{
+    glPushMatrix();
+    double a = (side / 2) - radius ;
+
+    glPushMatrix() ;
+    
+    for (int i = 0; i < 4; i++)
+    {
+        glPushMatrix();
+        glTranslatef(a * corner[i].x, a * corner[i].y, a * corner[i].z);
+        glRotatef(90 * i, 0, 0, 1);
+        drawSphere_part(radius, segments, segments);
+        glPopMatrix();
+    }
+    
+    glPopMatrix();
+    
+    glPushMatrix() ;
+    
+    for (int i = 0; i < 4; i++)
+    {
+        glPushMatrix();
+        glRotated(180,1, 0, 0) ;
+        glTranslatef(a * corner[i].x, a * corner[i].y, a * corner[i].z);
+        glRotatef(90 * i, 0, 0, 1);
+        drawSphere_part(radius, segments, segments);
+        glPopMatrix();
+    }
+    
+    glPopMatrix() ;
+
+    glPushMatrix() ;
+    
+    // following 3 loops draws 4*3=12 cylinders
+    for (int q = 0; q < 4; q++)
+    {
+        glPushMatrix();
+        glColor3f(0, 1, 0);
+        glTranslatef(a * corner[q].x, a * corner[q].y, 0);
+        glRotatef(90 * q, 0, 0, 1);
+        drawCylinder_part(radius, a, segments);
+        glPopMatrix();
+    }
+    
+    glPopMatrix() ;
+   
+    glPushMatrix() ;
+    
+    for (int q = 0; q < 4; q++)
+    {
+        glPushMatrix();
+        glColor3f(0, 1, 0);
+        glRotatef(90, 1, 0, 0);
+        glTranslatef(a * corner[q].x, a * corner[q].y, 0);
+        glRotatef(90 * q, 0, 0, 1);
+        drawCylinder_part(radius, a, segments);
+        glPopMatrix();
+    }
+    
+    glPopMatrix();
+   
+    glPushMatrix() ;
+    
+    for (int q = 0; q < 4; q++)
+    {
+        glPushMatrix();
+        glColor3f(0, 1, 0);
+        
+        glRotatef(90, 0, 1, 0);
+        glTranslatef(a * corner[q].x, a * corner[q].y, 0);
+        glRotatef(90 * q, 0, 0, 1);
+        drawCylinder_part(radius, a, segments);
+        glPopMatrix();
+    }
+    
+    glPopMatrix() ;
+    
+   
+    glPushMatrix();
+    glColor3f(1, 1, 1);
+    double s = side - (2*radius) ;
+    
+    glPushMatrix() ;
+  
+    //upper side
+    glTranslatef(0, 0, side/2);
+    drawCube_part(s);
+    glPopMatrix();
+
+	glPushMatrix() ;
+    //lower side
+    glTranslatef(0, 0, -side/2);
+    drawCube_part(s);
+    glPopMatrix();
+
+
+
+    for (int i = 0; i < 4; i++)
+    {
+        glPushMatrix();
+        glRotatef(90 * i, 0, 0, 1);
+        glTranslatef(side/2, 0, 0);
+        glRotatef(90, 0, 1, 0);
+        drawCube_part(s);
+        glPopMatrix();
+    }
+    
+
+    glPopMatrix();
+
+    glPopMatrix();
+}
 
 void drawSS()
 {
@@ -313,7 +464,7 @@ void specialKeyListener(int key, int x,int y){
 			pos = add(pos , R);
 			break;
 		case GLUT_KEY_LEFT:
-			pos = sub(pos , L);
+			pos = sub(pos , R);
 			break;
 
 		case GLUT_KEY_PAGE_UP:
@@ -405,16 +556,10 @@ void display(){
 	drawGrid();
 
     //glColor3f(1,0,0);
-    //drawSquare(10);
+    CubeSphere(50 , 10 , 20);
 
     //drawSS();
-	//poly();
-    drawCircle(30,24);
-
-    //drawCone(20,50,24);
-
-	//drawSphere(30,24,20);
-
+	//poly()
 
 
 
@@ -449,7 +594,13 @@ void init(){
 	//initialize the matrix
 	glLoadIdentity();
 
+	corner[0] = point(1, 1, 1);
+    corner[1] = point(-1, 1, 1);
+    corner[2] = point(-1, -1, 1);
+    corner[3] = point(1, -1, 1);
+
 	// initialize U,L,R
+	pos = point(70,100, 0);
 	U = point(0 , 0 , 1);
 	R = point(sqrt(2) , sqrt(2) , 0);
 	L = point(-sqrt(2) , sqrt(2) , 0);

@@ -172,7 +172,7 @@ void drawCube(){
     //right
     glPushMatrix();
     glTranslatef(-MAX_LEN, 0, 0);
-    glRotatef(90, 0, 1, 0);
+    //glRotatef(90, 0, 1, 0);
     drawSquare(currentLen);
     glPopMatrix();
 
