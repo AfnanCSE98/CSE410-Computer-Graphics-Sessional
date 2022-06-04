@@ -14,6 +14,10 @@ int drawaxes;
 double angle;
 
 int rotate_deg = 5;
+int radius = 10;
+
+int radius_chng = 1;
+int max_radius = 25;
 
 struct point
 {
@@ -478,8 +482,16 @@ void specialKeyListener(int key, int x,int y){
 			break;
 
 		case GLUT_KEY_HOME:
+			radius = radius + radius_chng;
+			if(radius >= max_radius){
+				radius = max_radius;
+			}
 			break;
 		case GLUT_KEY_END:
+			radius = radius - radius_chng;
+			if(radius <=0){
+				radius = 0;
+			}
 			break;
 
 		default:
@@ -556,7 +568,7 @@ void display(){
 	drawGrid();
 
     //glColor3f(1,0,0);
-    CubeSphere(50 , 10 , 20);
+    CubeSphere(50 , radius , 20);
 
     //drawSS();
 	//poly()
