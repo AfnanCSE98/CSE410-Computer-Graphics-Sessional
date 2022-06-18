@@ -1,0 +1,1 @@
+g++ 1.cpp -o App1 -lglut -lGLU -lGL && ./App1
