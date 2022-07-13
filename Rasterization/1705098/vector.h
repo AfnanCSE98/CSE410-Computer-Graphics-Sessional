@@ -1,3 +1,5 @@
+#pragma once
+
 #include<bits/stdc++.h>
 using namespace std;
 
@@ -107,7 +109,7 @@ public:
         return (*this) ;
     }
 
-    friend istream &operator>>(std::istream &is, Vector &v) {
+    friend istream &operator>>(istream &is, Vector &v) {
 
         is >> v.x >> v.y >> v.z;
         return is;
