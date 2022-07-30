@@ -51,17 +51,57 @@ public:
     void processInput() {
 
         string instruction;
+        
         while (true) {
             cin >> instruction;
 
             if (instruction == "triangle") {
-                processTriangle();
+                    Vector points[3];
+                    cin >> points[0];
+                    cin >> points[1];
+                    cin >> points[2];
+
+                    for (int i=0; i < 3; i++) {
+
+                        Vector model = transformPoint(points[i], currentStack.top());
+                        Vector view = transformPoint(model, VTM);
+                        Vector projection = transformPoint(view, PM);
+
+                        osStage1 << model; osStage2 << view; osStage3 << projection;
+                    }
+
+                    osStage1 << endl; osStage2 << endl; osStage3 << endl;
+
             } else if (instruction == "translate") {
-                processTranslate();
+                    double dx, dy, dz;
+                    cin >> dx >> dy >> dz;
+
+                    Matrix t = m.translationMatrix(dx, dy, dz);
+
+                    currentStack.push(currentStack.top() * t);
+
             } else if (instruction == "scale") {
-                processScale();
+                    double sx, sy, sz;
+                    cin >> sx >> sy >> sz;
+
+                    Matrix t = m.scalingMatrix(sx ,sy , sz);
+
+                    currentStack.push(currentStack.top() * t);
+
             } else if (instruction == "rotate") {
-                processRotate();
+                    double angle;
+                    Vector axis;
+                    cin >> angle >> axis;
+
+                    axis = axis.normalize();
+
+                    auto col1 = rodrigues(v.I(), axis, angle);
+                    auto col2 = rodrigues(v.J(), axis, angle);
+                    auto col3 = rodrigues(v.K(), axis, angle);
+
+                    Matrix r = m.rotationMatrix(col1, col2, col3);
+
+                    currentStack.push(currentStack.top() * r);
             } else if (instruction == "push") {
                 history.push(currentStack);
             } else if (instruction == "pop") {
@@ -76,58 +116,11 @@ public:
         osStage1.close();
         osStage2.close();
         osStage3.close();
-    }
 
-    void processTriangle() {
-        Vector points[3];
-        cin >> points[0];
-        cin >> points[1];
-        cin >> points[2];
-
-        for (int i=0; i < 3; i++) {
-
-            Vector model = transformPoint(points[i], currentStack.top());
-            Vector view = transformPoint(model, VTM);
-            Vector projection = transformPoint(view, PM);
-
-            osStage1 << model; osStage2 << view; osStage3 << projection;
-        }
-
-        osStage1 << endl; osStage2 << endl; osStage3 << endl;
-    }
-
-    void processTranslate() {
-        double dx, dy, dz;
-        cin >> dx >> dy >> dz;
-
-        Matrix t = m.translationMatrix(dx, dy, dz);
-
-        currentStack.push(currentStack.top() * t);
-    }
-
-    void processScale() {
-        double sx, sy, sz;
-        cin >> sx >> sy >> sz;
-
-        Matrix t = m.scalingMatrix(sx ,sy , sz);
-
-        currentStack.push(currentStack.top() * t);
-    }
-
-    void processRotate() {
-        double angle;
-        Vector axis;
-        cin >> angle >> axis;
-
-        axis = axis.normalize();
-
-        auto col1 = rodrigues(v.I(), axis, angle);
-        auto col2 = rodrigues(v.J(), axis, angle);
-        auto col3 = rodrigues(v.K(), axis, angle);
-
-        Matrix r = m.rotationMatrix(col1, col2, col3);
-
-        currentStack.push(currentStack.top() * r);
+        //clear
+        vector<vector<double>>().swap(VTM.data);
+        vector<vector<double>>().swap(PM.data);
+        vector<vector<double>>().swap(m.data);
     }
 
     Vector transformPoint(Vector point, Matrix &T) {

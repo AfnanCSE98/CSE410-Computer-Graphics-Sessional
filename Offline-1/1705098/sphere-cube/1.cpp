@@ -13,10 +13,11 @@ int drawgrid;
 int drawaxes;
 double angle;
 
-double radius ;
-double rotateAngle;
-double distance  ;
-int segments;
+int rotate_deg = 5;
+int radius = 10;
+
+int radius_chng = 1;
+int max_radius = 25;
 
 struct point
 {
@@ -27,20 +28,11 @@ struct point
         this->y = y;
         this->z = z;
     }
-	point(const point &p){
-        this->x = p.x ;
-        this->y = p.y ;
-        this->z = p.z ;
-    }
-
 	point() {}
 };
 
 point pos , L , U , R;
 point corner[4];
-
-point *p;
-point *d;
 
 point rotateVec(point p , point ref , bool clockwise , int deg){
 	// cross product
@@ -73,15 +65,12 @@ void drawAxes()
 	{
 		glColor3f(0.0, 1.0, 1.0);
 		glBegin(GL_LINES);{
-			 glColor3f(1.0, 0, 0);
 			glVertex3f( 100,0,0);
 			glVertex3f(-100,0,0);
-			
-			glColor3f(0, 1.0, 0);
+
 			glVertex3f(0,-100,0);
 			glVertex3f(0, 100,0);
-			
-			glColor3f(0, 0, 1.0);
+
 			glVertex3f(0,0, 100);
 			glVertex3f(0,0,-100);
 		}glEnd();
@@ -183,6 +172,192 @@ void drawCone(double radius,double height,int segments)
 }
 
 
+void drawSphere_part(double radius,int slices,int stacks)
+{
+	struct point points[stacks+1][slices+1];
+	int i,j;
+	double h,r;
+	//generate points
+	//stacks : # of polygons
+	//slices : # of sides of each polygon
+	for(i=0;i<=stacks;i++)
+	{
+		h=radius*sin(((double)i/(double)stacks)*(pi/2));
+		r=radius*cos(((double)i/(double)stacks)*(pi/2));
+		for(j=0;j<=slices;j++)
+		{
+			points[i][j].x=r*cos(((double)j/(double)slices)*0.5*pi);
+			points[i][j].y=r*sin(((double)j/(double)slices)*0.5*pi);
+			points[i][j].z=h;
+		}
+	}
+	//draw quads using generated points
+	for(i=0;i<stacks;i++)
+	{
+        glColor3f(1, 0, 0);
+		for(j=0;j<slices;j++)
+		{
+			glBegin(GL_QUADS);{
+				glVertex3f(points[i][j].x,points[i][j].y,points[i][j].z);
+				glVertex3f(points[i][j+1].x,points[i][j+1].y,points[i][j+1].z);
+				glVertex3f(points[i+1][j+1].x,points[i+1][j+1].y,points[i+1][j+1].z);
+				glVertex3f(points[i+1][j].x,points[i+1][j].y,points[i+1][j].z);
+                
+			}glEnd();
+		}
+	}
+	glPopMatrix();
+}
+
+void drawCylinder_part(double radius, double height, int segments){
+	glPushMatrix();
+	point p[segments+1];
+	double angle;
+
+	for(int i=0 ; i<=segments ; i++){
+		angle = ((double)(i) / (double)(segments)) * pi * 0.5;
+		p[i].x = radius * cos(angle);
+        p[i].y = radius * sin(angle);
+        p[i].z = height;
+	}
+
+	for(int i=0 ; i<segments ; i++){
+		
+		glBegin(GL_QUADS);
+        glVertex3f(p[i].x, p[i].y, p[i].z);
+        glVertex3f(p[i + 1].x, p[i + 1].y, p[i + 1].z);
+        glVertex3f(p[i + 1].x, p[i + 1].y, -p[i + 1].z);
+        glVertex3f(p[i].x, p[i].y, -p[i].z);
+
+        glEnd();
+	}
+
+	 glPopMatrix();
+}
+
+void drawCube_part(int s){
+	int a = s / 2;
+    glBegin(GL_QUADS);
+    glVertex3f(a, a, 0);
+    glVertex3f(a, -a, 0);
+    glVertex3f(-a, -a, 0);
+    glVertex3f(-a, a, 0);
+    glEnd();
+}
+
+void CubeSphere(double side, double radius, int segments)
+{
+    glPushMatrix();
+    double a = (side / 2) - radius ;
+
+    glPushMatrix() ;
+    
+    for (int i = 0; i < 4; i++)
+    {
+        glPushMatrix();
+        glTranslatef(a * corner[i].x, a * corner[i].y, a * corner[i].z);
+        glRotatef(90 * i, 0, 0, 1);
+        drawSphere_part(radius, segments, segments);
+        glPopMatrix();
+    }
+    
+    glPopMatrix();
+    
+    glPushMatrix() ;
+    
+    for (int i = 0; i < 4; i++)
+    {
+        glPushMatrix();
+        glRotated(180,1, 0, 0) ;
+        glTranslatef(a * corner[i].x, a * corner[i].y, a * corner[i].z);
+        glRotatef(90 * i, 0, 0, 1);
+        drawSphere_part(radius, segments, segments);
+        glPopMatrix();
+    }
+    
+    glPopMatrix() ;
+
+    glPushMatrix() ;
+    
+    // following 3 loops draws 4*3=12 cylinders
+    for (int q = 0; q < 4; q++)
+    {
+        glPushMatrix();
+        glColor3f(0, 1, 0);
+        glTranslatef(a * corner[q].x, a * corner[q].y, 0);
+        glRotatef(90 * q, 0, 0, 1);
+        drawCylinder_part(radius, a, segments);
+        glPopMatrix();
+    }
+    
+    glPopMatrix() ;
+   
+    glPushMatrix() ;
+    
+    for (int q = 0; q < 4; q++)
+    {
+        glPushMatrix();
+        glColor3f(0, 1, 0);
+        glRotatef(90, 1, 0, 0);
+        glTranslatef(a * corner[q].x, a * corner[q].y, 0);
+        glRotatef(90 * q, 0, 0, 1);
+        drawCylinder_part(radius, a, segments);
+        glPopMatrix();
+    }
+    
+    glPopMatrix();
+   
+    glPushMatrix() ;
+    
+    for (int q = 0; q < 4; q++)
+    {
+        glPushMatrix();
+        glColor3f(0, 1, 0);
+        
+        glRotatef(90, 0, 1, 0);
+        glTranslatef(a * corner[q].x, a * corner[q].y, 0);
+        glRotatef(90 * q, 0, 0, 1);
+        drawCylinder_part(radius, a, segments);
+        glPopMatrix();
+    }
+    
+    glPopMatrix() ;
+    
+   
+    glPushMatrix();
+    glColor3f(1, 1, 1);
+    double s = side - (2*radius) ;
+    
+    glPushMatrix() ;
+  
+    //upper side
+    glTranslatef(0, 0, side/2);
+    drawCube_part(s);
+    glPopMatrix();
+
+	glPushMatrix() ;
+    //lower side
+    glTranslatef(0, 0, -side/2);
+    drawCube_part(s);
+    glPopMatrix();
+
+
+    for (int i = 0; i < 4; i++)
+    {
+        glPushMatrix();
+        glRotatef(90 * i, 0, 0, 1);
+        glTranslatef(side/2, 0, 0);
+        glRotatef(90, 0, 1, 0);
+        drawCube_part(s);
+        glPopMatrix();
+    }
+    
+
+    glPopMatrix();
+
+    glPopMatrix();
+}
+
 void drawSS()
 {
     glColor3f(1,0,0);
@@ -214,24 +389,40 @@ void drawSS()
 void keyboardListener(unsigned char key, int x,int y){
 	switch(key){
 
-		case 'w':
-			pos.x -= 2*cos(rotateAngle*acos(-1.0)/180.0) ;
-            pos.y -= 2*sin(rotateAngle*acos(-1.0)/180.0) ;
-            distance -= 2 ;
+		case '1':
+		// look left
+			L = rotateVec(L , U , false , rotate_deg);
+			R = rotateVec(R , U , false , rotate_deg);
 			break;
 
-		case 's':
-			pos.x += 2*cos(rotateAngle*acos(-1.0)/180.0) ;
-            pos.y += 2*sin(rotateAngle*acos(-1.0)/180.0) ;
-            distance += 2 ;
+		case '2':
+		// look right
+			R = rotateVec(R , U , true , rotate_deg);
+			L = rotateVec(L , U , true , rotate_deg);
 			break;
 
-		case 'a':
-			rotateAngle += 4 ;
+		case '3':
+		// look up
+			U = rotateVec(U , R , false , rotate_deg);
+			L = rotateVec(L , R , false , rotate_deg);
 			break;
 
-		case 'd':
-			rotateAngle -= 4 ;
+		case '4':
+		// look down
+			U = rotateVec(U , R , true , rotate_deg);
+			L = rotateVec(L , R , true , rotate_deg);
+			break;
+
+		case '5':
+		// tilt clockwise
+			R = rotateVec(R, L, false , rotate_deg);
+    		U = rotateVec(U, L, false , rotate_deg);
+			break;
+
+		case '6':
+		// tilt anticlockwise
+			R = rotateVec(R, L, true , rotate_deg);
+    		U = rotateVec(U, L, true , rotate_deg);
 			break;
 
 		default:
@@ -266,17 +457,17 @@ point sub(point p1 , point p2){
 void specialKeyListener(int key, int x,int y){
 	switch(key){
 		case GLUT_KEY_DOWN:		//down arrow key
-			cameraHeight -= 3.0;
+			pos = sub(pos , L);
 			break;
 		case GLUT_KEY_UP:		// up arrow key
-			cameraHeight += 3.0;
+			pos = add(pos , L);
 			break;
 
 		case GLUT_KEY_RIGHT:
-			cameraAngle += 0.03;
+			pos = add(pos , R);
 			break;
 		case GLUT_KEY_LEFT:
-			 cameraAngle -= 0.03;
+			pos = sub(pos , R);
 			break;
 
 		case GLUT_KEY_PAGE_UP:
@@ -290,10 +481,16 @@ void specialKeyListener(int key, int x,int y){
 			break;
 
 		case GLUT_KEY_HOME:
-		
+			radius = radius + radius_chng;
+			if(radius >= max_radius){
+				radius = max_radius;
+			}
 			break;
 		case GLUT_KEY_END:
-			
+			radius = radius - radius_chng;
+			if(radius <=0){
+				radius = 0;
+			}
 			break;
 
 		default:
@@ -305,7 +502,9 @@ void specialKeyListener(int key, int x,int y){
 void mouseListener(int button, int state, int x, int y){	//x, y is the x-y of the screen (2D)
 	switch(button){
 		case GLUT_LEFT_BUTTON:
-		
+			if(state == GLUT_DOWN){		// 2 times?? in ONE click? -- solution is checking DOWN or UP
+				drawaxes=1-drawaxes;
+			}
 			break;
 
 		case GLUT_RIGHT_BUTTON:
@@ -321,90 +520,6 @@ void mouseListener(int button, int state, int x, int y){	//x, y is the x-y of th
 	}
 }
 
-void timer(int sec){
-	glutPostRedisplay() ;
-    glutTimerFunc(1000/60,timer,0) ;
-	x = (x+50) % 60;
-	y = (y-20) % 50;
-}
-
-
-void generate_points(){
-	double h = radius / 2 ;
-    for(int i=0;i<=segments;i++){
-        angle = ((1.0*i)/(1.0*segments))*acos(-1.0)*2 ;
-        if(i%8==0){
-            d[i/8].x = radius*cos(angle) ;
-            d[i/8].y = radius*sin(angle) ;
-            d[i/8].z = h/4 ;
-        }
-		
-        p[i].x = radius*cos(angle) ;
-        p[i].y = radius*sin(angle) ;
-        p[i].z = h/2 ;
-    }
-
-}
-
-void draw_wheel(){
-	glPushMatrix();
-
-	for(int i=0; i <=segments ; i++ ){
-		glColor3f(0,128,255);
-
-		glBegin(GL_QUADS) ;
-        glVertex3f(p[i].x,p[i].y,p[i].z) ;
-        glVertex3f(p[i+1].x,p[i+1].y,p[i+1].z) ;
-        glVertex3f(p[i+1].x,p[i+1].y,-p[i+1].z) ;
-        glVertex3f(p[i].x,p[i].y,-p[i].z) ;
-        
-        glEnd() ;
-
-	}
-
-	glPopMatrix();
-}
-
-void draw_rect(){
-	glPushMatrix();
-
-	double shade;
-	for(int i=0;i<2;i++){
-        if(i==0){
-			glColor3f(204,204,0);
-		}
-		else{
-			glColor3f(255,204,255);
-		}
-        
-        
-        glBegin(GL_QUADS) ;
-        glVertex3f(d[i].x,d[i].y,d[i].z) ;
-        glVertex3f(d[i+2].x,d[i+2].y,d[i+2].z) ;
-        glVertex3f(d[i+2].x,d[i+2].y,-d[i+2].z) ;
-        glVertex3f(d[i].x,d[i].y,-d[i].z) ;
-        glEnd();
-    }
-    glPopMatrix() ;
-}
-
-void Wheel(){
-	glPushMatrix();
-
-	glTranslatef(0,0,radius);//put above xy plane.without this translation,wheel will be halfside along xy plane
-    glTranslatef(pos.x,pos.y,pos.z) ;//enable movement with key w/s pressed
-    glRotatef(rotateAngle,0,0,1) ;//rotate around z axis when key  a/d pressed
-    glRotatef(distance*(360.0/(2*3.1416*radius)),0,1,0) ;//enable rotation while moving upon key w/s presed
-    glRotatef(90, 1,0,0) ;//put wheel vertical to xy plane,without it wheel will be parallel to xy plane
-
-	generate_points();
-
-	draw_wheel();
-
-	draw_rect();
-
-	glPopMatrix();
-}
 void display(){
 
 	//clear the display
@@ -427,8 +542,8 @@ void display(){
 	//3. Which direction is the camera's UP direction?
 
 	//gluLookAt(100,100,100,	0,0,0,	0,0,1);
-	gluLookAt(100*cos(cameraAngle), 100*sin(cameraAngle), cameraHeight,		0,0,0,		0,0,1);
-	//gluLookAt(pos.x, pos.y, pos.z, pos.x + L.x, pos.y + L.y, pos.z + L.z, U.x, U.y, U.z);
+	//gluLookAt(200*cos(cameraAngle), 200*sin(cameraAngle), cameraHeight,		0,0,0,		0,0,1);
+	gluLookAt(pos.x, pos.y, pos.z, pos.x + L.x, pos.y + L.y, pos.z + L.z, U.x, U.y, U.z);
 
 	//again select MODEL-VIEW
 	glMatrixMode(GL_MODELVIEW);
@@ -439,10 +554,17 @@ void display(){
 	****************************/
 	//add objects
 
+	
 	drawAxes();
 	drawGrid();
 
-    Wheel();
+    //glColor3f(1,0,0);
+    CubeSphere(50 , radius , 20);
+
+    //drawSS();
+	//poly()
+
+
 
 	//ADD this line in the end --- if you use double buffer (i.e. GL_DOUBLE)
 	glutSwapBuffers();
@@ -450,16 +572,16 @@ void display(){
 
 
 void animate(){
-	//angle+=0.1;
+	angle+=0.1;
 	//codes for any changes in Models, Camera
 	glutPostRedisplay();
 }
 
 void init(){
 	//codes for initialization
-	drawgrid=1;
+	drawgrid=0;
 	drawaxes=1;
-	cameraHeight=100.0;
+	cameraHeight=150.0;
 	cameraAngle=1.0;
 	angle=0;
 
@@ -475,19 +597,19 @@ void init(){
 	//initialize the matrix
 	glLoadIdentity();
 
-	//related to wheel
-	radius = 20;
-	segments = 31;
-	rotateAngle = 0;
-	distance = 0;
-	
-	pos = point(0,0,0) ;
+	corner[0] = point(1, 1, 1);
+    corner[1] = point(-1, 1, 1);
+    corner[2] = point(-1, -1, 1);
+    corner[3] = point(1, -1, 1);
 
-	p = new point[segments+1];
-	d = new point[4];
+	// initialize U,L,R
+	pos = point(100,100, 0);
+	U = point(0 , 0 , 1);
+	R = point(-(1/sqrt(2)) , (1/sqrt(2)) , 0);
+	L = point(-(1/sqrt(2)) , -(1/sqrt(2)) , 0);
 
 	//give PERSPECTIVE parameters
-	gluPerspective(80,	1,	1,	1000.0);
+	gluPerspective(80,	0.8,	1,	1000.0);
 	//field of view in the Y (vertically)
 	//aspect ratio that determines the field of view in the X direction (horizontally)
 	//near distance
@@ -507,13 +629,11 @@ int main(int argc, char **argv){
 	glEnable(GL_DEPTH_TEST);	//enable Depth Testing
 
 	glutDisplayFunc(display);	//display callback function
-	//glutIdleFunc(animate);		//what you want to do in the idle time (when no drawing is occuring)
+	glutIdleFunc(animate);		//what you want to do in the idle time (when no drawing is occuring)
 
 	glutKeyboardFunc(keyboardListener);
 	glutSpecialFunc(specialKeyListener);
 	glutMouseFunc(mouseListener);
-
-	 glutTimerFunc(0,timer,0) ;
 
 	glutMainLoop();		//The main loop of OpenGL
 

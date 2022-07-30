@@ -92,9 +92,9 @@ public:
             zBuffer.push_back(rowZ);
         }
 
-        for (int i = 0; i < screenHeight; i++) {
+        for (int i = 0; i < screenWidth; i++) {
             vector<Color> rowP;
-            for (int j = 0; j < screenWidth; j++) {
+            for (int j = 0; j < screenHeight; j++) {
                 rowP.push_back(Color(0,0,0));
             }
             pixelBuffer.push_back(rowP);
@@ -102,8 +102,6 @@ public:
 
         cout<<"zbuffer sz "<<zBuffer.size()<<endl;
         cout<<"pixellbuffer sz: "<<pixelBuffer.size()<<endl;
-        
-
     }
 
     vector<pair<Vector, Vector>> getIntersectingEdges(double yScanline, Triangle & t) {
@@ -150,12 +148,12 @@ public:
 
     void apply_procedure(){
         int topScanLine,bottomScanLine;
-
         for(Triangle t : triangles){
             topScanLine = round((yLimit - min(t.getMax_Y(), yLimit)) / dy);
             bottomScanLine  = round((yLimit - max(t.getMin_Y(), -yLimit)) / dy);
 
             double yScanline = min(t.getMax_Y(), yLimit);
+             
             for(int row = topScanLine; row<bottomScanLine ; row++){
 
                 auto edges = getIntersectingEdges(yScanline, t);
@@ -206,7 +204,8 @@ public:
                 yScanline -= dy;
 
             }
-         }
+           
+        }
     }
 
     void generate_output(){
@@ -230,5 +229,11 @@ public:
             }
         }
         image.save_image("Outputs/out.bmp");
+
+        //clear
+        vector<Triangle>().swap(triangles);
+        vector<vector<double>>().swap(zBuffer);
+        vector<vector<Color>>().swap(pixelBuffer);
+
     }
 };
