@@ -165,7 +165,7 @@ public:
                 auto e1 = edges.at(0);
                 auto e2 = edges.at(1);
 
-                double za,zb,xa,xb=9;;
+                double za,zb,xa,xb=9;
                 load_z_x(e1 , e2 , yScanline , za , zb , xa , xb);
                 //cout<<"xb = ";
                 
