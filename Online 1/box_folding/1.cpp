@@ -7,15 +7,14 @@
 
 #define pi (2*acos(0.0))
 
-#define GRID_COUNT 14
-#define GRID_DIFF 10
-#define INCLINE_ANGLE 45
+int sq_side = 30;
 
 double cameraHeight;
 double cameraAngle;
 int drawgrid;
 int drawaxes;
 double angle;
+double ang1=0,ang2=0,ang3=0,ang4=0,ang5=0;
 
 double radius ;
 double rotateAngle;
@@ -122,12 +121,27 @@ void drawGrid()
 
 void drawSquare(double a)
 {
-    glColor3f(1.0,0.0,0.0);
+    //glColor3f(1.0,0.0,0.0);
 	glBegin(GL_QUADS);{
-		glVertex3f( a, a,2);
-		glVertex3f( a,-a,2);
-		glVertex3f(-a,-a,2);
-		glVertex3f(-a, a,2);
+		glVertex3f( a, 2*a,0);
+		glVertex3f(-a, 2*a,0);
+		glVertex3f(-a,0,0);
+		glVertex3f( a,0,0);
+		
+		
+	}glEnd();
+}
+
+void drawRectangle(double a , double b)
+{
+    //glColor3f(1.0,0.0,0.0);
+	glBegin(GL_QUADS);{
+		glVertex3f( a/2, b,0);
+		glVertex3f(-a/2, b,0);
+		glVertex3f(-a/2,0,0);
+		glVertex3f( a/2,0,0);
+		
+		
 	}glEnd();
 }
 
@@ -237,44 +251,34 @@ point sub(point p1 , point p2){
 void keyboardListener(unsigned char key, int x,int y){
 	switch(key){
 
-		case 'w':
-			pos = sub(pos , dir);
-			pos.z = 0;
-            
-			robo_pos = sub(robo_pos , dir);
-			robo_pos.z = 0;
-
-            distance -= 2 ;
+		case '1':
+			ang1 -= 15;
 			break;
 
-		case 's':
-			
-			pos = add(pos , dir);
-			pos.z = 0;
-            
-			robo_pos = add(robo_pos , dir);
-			robo_pos.z = 0;
-
-            distance += 2 ;
+		case '2':
+			ang1 += 15;
 			break;
 
-		case 'a':
-			rotateAngle += 4 ;
-			dir.x = cos(rotateAngle*acos(-1.0)/180.0);
-			dir.y = sin(rotateAngle*acos(-1.0)/180.0);
+		case '3':
+			ang2 -= 15;
 			break;
 
-		case 'd':
-			rotateAngle -= 4 ;
-			dir.x = cos(rotateAngle*acos(-1.0)/180.0);
-			dir.y = sin(rotateAngle*acos(-1.0)/180.0);
-			
+		case '4':
+			ang2 += 15;
 			break;
-		case 'c' :
-			radius -= 3;
+		case '5' :
+			ang3 -= 15;
 			break;
-		case 'x' :
-			radius += 3;
+		case '6' :
+			ang3 += 15;
+			break;
+		case '7' :
+			ang4 -= 15;
+			ang5 -= 15;
+			break;
+		case '8' :
+			ang4 += 15;
+			ang5 += 15;
 			break;
 		default:
 			break;
@@ -444,7 +448,16 @@ void draw_board(){
 }
 
 
-
+void sudoSquare(double a)
+{
+    glColor3f(1.0,0.0,0.0);
+	glBegin(GL_QUADS);{
+		glVertex3f( a, a,2);
+		glVertex3f( a,-a,2);
+		glVertex3f(-a,-a,2);
+		glVertex3f(-a, a,2);
+	}glEnd();
+}
 void display(){
 
 	//clear the display
@@ -483,30 +496,64 @@ void display(){
 
     glPopMatrix();
 	drawGrid();
-
-
-	glPushMatrix();
-	glTranslatef(40,40,0);
-	Wheel();
-	glPopMatrix();
-
-	glPushMatrix();
-	glTranslatef(40,-40,0);
-	Wheel();
-	glPopMatrix();
-
-	glPushMatrix();
-	glTranslatef(-40,-40,0);
-	Wheel();
-	glPopMatrix();
-
-	glPushMatrix();
-	glTranslatef(-40,40,0);
-	Wheel();
-	glPopMatrix();
 	
-	draw_board();
-	draw_dir();
+	glPushMatrix();
+	glTranslatef(0,-sq_side , 0);
+	drawSquare(sq_side);
+	glPopMatrix();
+
+	glPushMatrix();
+	glColor3f(0,1,0);
+	glTranslatef(0,sq_side,0);
+	glRotatef(ang3 , 1,0,0);
+
+	drawSquare(sq_side);
+	glPopMatrix();
+
+	glPushMatrix();
+	glColor3f(0,0,1);
+	glTranslatef(sq_side,0,0);
+	glRotatef(ang2 , 0 , 1 , 0);
+	glRotatef(270 , 0,0,1);
+	drawSquare(sq_side);
+	glPopMatrix();
+
+
+	glPushMatrix();
+	glColor3f(1,1,0);
+	glTranslatef(0 , -sq_side,0);
+	glRotatef(ang1 , 1,0,0);
+	glRotatef(180 , 0,0,1);
+	drawSquare(sq_side);
+	glPopMatrix();
+
+	glPushMatrix();
+	glColor3f(0,1,1);
+	glTranslatef(-sq_side , 0,0);
+	glRotatef(ang4 , 0,1,0);
+	glRotatef(90 , 0,0,1);
+	drawSquare(sq_side);
+	glPopMatrix();
+
+
+	glPushMatrix();
+	glColor3f(1,1,1);
+	glTranslatef(-3*sq_side , 0,0);
+	glRotatef(ang5+ang4 , 0,1,0);
+	glRotatef(90 , 0,0,1);
+	sudoSquare(sq_side);
+	glPopMatrix();
+
+	
+/*
+	glPushMatrix();
+	glColor3f(1,1,1);
+	glTranslatef(-3*sq_side , 0,0);
+	glRotatef(ang5 , 0,1,0);
+	glRotatef(90 , 0,0,1);
+	drawSquare(sq_side);
+	glPopMatrix();
+*/
 	//ADD this line in the end --- if you use double buffer (i.e. GL_DOUBLE)
 	glutSwapBuffers();
 }
