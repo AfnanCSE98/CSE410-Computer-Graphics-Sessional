@@ -206,7 +206,7 @@ public:
                 yScanline -= dy;
 
             }
-         }
+        }
     }
 
     void generate_output(){
@@ -230,5 +230,11 @@ public:
             }
         }
         image.save_image("Outputs/out.bmp");
+
+        //clear
+        vector<Triangle>().swap(triangles);
+        vector<vector<double>>().swap(zBuffer);
+        vector<vector<Color>>().swap(pixelBuffer);
+
     }
 };
