@@ -17,8 +17,7 @@ class Point;
 const int INF = 1e4;
 const double EPS = 1e-7;
 const char* scene_file = "scene.txt";
-const char* output_file = "1605024_out.bmp";
-const string texture_file = "1605024_texture_file.bmp";
+const char* output_file = "1705098_out.bmp";
 const double RGB = 255;
 
 static int REFRACTION_ON, TEXTURE_ON;
@@ -109,7 +108,9 @@ public:
         for(int i = 0  ; i < M ; i++) ret += (p1[i] - p2[i]) * (p1[i] - p2[i]);
         return sqrt(ret);
     }
+
 };
+
 static Point eye, u, r, l;
 //------------------------------------------------------ray----------------------------------------------------------------
 class Ray {
@@ -537,3 +538,98 @@ public:
 };
 
 
+//------------------------------------------------------camera----------------------------------------------------------------
+class Camera {
+public:
+
+    Point pos;
+    Point u, r, l;
+    int fovy;
+    int aspectRatio;
+    int nearPlane;
+    int farPlane;
+    double camera_speed;
+    double rotate_angle;
+        
+    Camera() {
+
+        pos = Point(100, 100, 50);
+        r = Point(-1.0/sqrt(2.0), 1.0/sqrt(2.0), 0);
+        l = Point(-1.0/sqrt(2.0), -1.0/sqrt(2.0), 0);
+        u = Point(0, 0, 1);
+
+        fovy = 90;
+        aspectRatio = 1;
+        nearPlane = 1;
+        farPlane = 1000;
+        camera_speed = 2;
+        rotate_angle = camera_speed * PI / 180;
+    }
+
+    void look_left() {
+        Point rr = r * cos(-rotate_angle) - l * sin(-rotate_angle);
+        Point ll = r * sin(-rotate_angle) + l * cos(-rotate_angle);
+        r = rr;
+        l = ll;
+    }
+
+    void look_right() {
+        Point rr = r * cos(rotate_angle) - l * sin(rotate_angle);
+        Point ll = r * sin(rotate_angle) + l * cos(rotate_angle);
+        r = rr;
+        l = ll;
+    }
+
+    void look_up() {
+        Point uu = u * cos(-rotate_angle) + l * sin(-rotate_angle);
+        Point ll = u * sin(-rotate_angle)*-1 + l * cos(-rotate_angle);
+        u = uu;
+        l = ll;
+    }
+
+     void look_down() {
+        Point uu = u * cos(rotate_angle) + l * sin(rotate_angle);
+        Point ll = u * sin(rotate_angle)*-1 + l * cos(rotate_angle);
+        u = uu;
+        l = ll;
+    }
+
+    void tilt_clockwise() {
+        Point uu = u * cos(rotate_angle) - r * sin(rotate_angle);
+        Point rr = u * sin(rotate_angle) + r * cos(rotate_angle);
+        u = uu;
+        r = rr;
+    }
+
+    void tilt_counter_clockwise() {
+        Point uu = u * cos(-rotate_angle) - r * sin(-rotate_angle);
+        Point rr = u * sin(-rotate_angle) + r * cos(-rotate_angle);
+        u = uu;
+        r = rr;
+    }
+
+    void up_arrow(){
+        pos = pos + l * camera_speed;
+    }
+
+    void down_arrow(){
+        pos = pos - l * camera_speed;
+    }
+
+    void right_arrow(){
+        pos = pos + r * camera_speed;
+    }
+
+    void left_arrow(){
+        pos = pos - r * camera_speed;
+    }
+
+    void page_up(){
+        pos = pos + u * camera_speed;
+    }
+
+    void page_down(){
+        pos = pos - u * camera_speed;
+    }
+
+};
