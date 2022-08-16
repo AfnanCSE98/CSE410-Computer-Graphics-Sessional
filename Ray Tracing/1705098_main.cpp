@@ -21,10 +21,10 @@ void capture() {
     image.clear();
 
     double plane_distance = (window_height/2.0) / tan( (view_angle * PI)/(180.0 *2.0) );
-    Point top_left = eye + l*plane_distance - r*window_width/2 + u*window_height/2;
+    Point top_left = camera.pos + camera.l*plane_distance - camera.r*window_width/2 + camera.u*window_height/2;
     double du = window_width/pixels;
     double dv = window_height/pixels;
-    top_left = top_left + r * 0.5 * du - u * 0.5 * dv;
+    top_left = top_left + camera.r * 0.5 * du - camera.u * 0.5 * dv;
 
     Color color;
     Object *nearest = nullptr;
@@ -32,9 +32,9 @@ void capture() {
     for(int i = 0 ; i < pixels ; i++) {
         for(int j = 0 ; j < pixels; j++) {
 
-            Point current_pixel = top_left + r * du * j  - u * dv * i ;
+            Point current_pixel = top_left + camera.r * du * j  - camera.u * dv * i ;
 
-            Ray ray(eye, current_pixel - eye);
+            Ray ray(camera.pos, current_pixel - camera.pos);
 
             double t_min = INF;
             for(Object *object: objects) {

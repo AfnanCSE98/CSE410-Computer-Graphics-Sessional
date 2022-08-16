@@ -111,7 +111,6 @@ public:
 
 };
 
-static Point eye, u, r, l;
 //------------------------------------------------------ray----------------------------------------------------------------
 class Ray {
 public:
@@ -204,7 +203,7 @@ class Object{
 public:
     Color object_color;
     double coEfficients[4]{} ;// reflection coefficients
-    int shine{}; // exponent term of specular component
+    int shine; // exponent term of specular component
 
     virtual void draw() = 0;
     virtual Point get_normal(Point pt) = 0;
@@ -291,6 +290,7 @@ public:
 
             Point L = light.light_pos - intersection_point;
             Point R = get_reflection_vector(L, N);
+            Point eye = Point(100,100,50);
             Point V = eye - intersection_point;
             L.normalize();
             V.normalize();
