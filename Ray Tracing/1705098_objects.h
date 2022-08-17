@@ -135,6 +135,7 @@ public:
         }
         glPopMatrix();
     }
+
     friend istream &operator>>(istream &is, Sphere &v) {
         is >> v.reference_point;
         is >> v.radius;
@@ -239,7 +240,7 @@ public:
         glPushMatrix();
         {
             glTranslatef(position.x, position.y, position.z);
-            glutSolidSphere(0.5, 7, 7);
+            glutSolidSphere(0.5, 7, 7);//3 args : radius,slice,stack
         }
         glPopMatrix();
     }
@@ -265,4 +266,72 @@ public:
             light.draw();
         }
     }
+};
+
+
+class Floor : public Object {
+public:
+    int tileWidth;
+    int width;
+
+    Floor(int tw, int w) {
+        name = "floor";
+        tileWidth = tw;
+        width = w;
+    }
+
+    void draw() const override {
+
+        double color = 0;
+        int leftLim = -5 * width;
+        int rightLimit = 5 * width;
+        glPushMatrix();
+        for (int i = leftLim; i < rightLimit; i += tileWidth) {
+            for (int j = leftLim; j < rightLimit; j += tileWidth) {
+                color = 1 - color;
+                glColor3f(color, color, color);
+
+                glBegin(GL_QUADS);
+                {
+                    glVertex2f(i, j);
+
+                    glVertex2f(i + tileWidth, j);
+
+                    glVertex2f(i + tileWidth, j + tileWidth);
+
+                    glVertex2f(i, j + tileWidth);
+
+                }
+                glEnd();
+            }
+            color = 1 - color;
+        }
+        glPopMatrix();
+    }
+
+    Vector getNormal(Vector intersectionPoint) const override {
+        return {0, 0, 1};
+    }
+
+    Color getColor(Vector intersectPoint) const override {
+        auto dx = static_cast<int>((static_cast<double>(intersectPoint.x + width / 2.0)) / tileWidth);
+        auto dy = static_cast<int>((static_cast<double>(intersectPoint.y + width / 2.0)) / tileWidth);
+
+        int remI = dx % 2;
+        int remJ = dy % 2;
+
+        if (remI < 0) {
+            remI *= -1;
+        }
+        if (remJ < 0) {
+            remJ *= -1;
+        }
+
+        if ((remI == 0 && remJ == 0) || (remI == 1 && remJ == 1)) {
+            return {1, 1, 1};
+        } else {
+            return {0, 0, 0};
+        }
+    }
+
 };

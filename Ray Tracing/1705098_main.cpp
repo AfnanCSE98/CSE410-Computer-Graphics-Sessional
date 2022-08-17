@@ -57,9 +57,8 @@ void loadData() {
             cin>>s;
             obj = new Sphere(s.reference_point, s.color, s.radius, s.getAmbient(), s.getDiffuse(), s.getSpecular(), s.getReflection(), s.getShine());
             scene.objects.push_back(obj);
-            cout<<type<<endl;
+            cout<<s<<endl;
         }
-
     }
 
     cin>>scene.numLightSources;
@@ -67,9 +66,9 @@ void loadData() {
         Light l;
         cin>>l;
         scene.lights.push_back(l);
-        
+        cout<<l<<endl;
     }
-   /*
+   
     Object * floor = new Floor(TILE_WIDTH, camera.farPlane);
 
     floor->setAmbient(0.35);
@@ -80,7 +79,7 @@ void loadData() {
 
     scene.numObjects += 1;
     scene.objects.push_back(floor);
-    */
+    
 }
 
 void init() {
@@ -89,6 +88,7 @@ void init() {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluPerspective(camera.fovy, camera.aspectRatio, camera.nearPlane, camera.farPlane);
+    cout<<"init done"<<endl;
 }
 
 
@@ -106,12 +106,15 @@ int main(int argc, char **argv) {
     glEnable(GL_DEPTH_TEST);
 
     glutDisplayFunc(display);
+    cout<<"display done"<<endl;
     glutIdleFunc(animate);
+    cout<<"idle done"<<endl;
 
    // registerSpecialKeysListener(specialKeyListener);
    // registerKeyboardListener(keyboardListener);
 
     glutMainLoop();
+    cout<<"main loop done"<<endl;
 
     return 0;
 }
