@@ -8,24 +8,11 @@ using namespace std;
 
 const double window_height = 500, window_width = 500;
 const double view_angle = 80;
+int numCaptures = 0;
 
 Camera camera;
 
-void capture() {
-
-    cerr<<"Generating Image...."<<endl;
-
-    clock_t start = clock();
-
-    bitmap_image image(pixels, pixels);
-    image.clear();
-
-    double plane_distance = (window_height/2.0) / tan( (view_angle * PI)/(180.0 *2.0) );
-    Point top_left = camera.pos + camera.l*plane_distance - camera.r*window_width/2 + camera.u*window_height/2;
-    double du = window_width/pixels;
-    double dv = window_height/pixels;
-    top_left = top_left + camera.r * 0.5 * du - camera.u * 0.5 * dv;
-
+void sendRaysThroughAllPixels(Point &top_left , double du , double dv , bitmap_image &image){
     Color color;
     Object *nearest = nullptr;
 
@@ -52,15 +39,31 @@ void capture() {
             }
         }
     }
-    image.save_image(output_file);
-    cerr<<"Image generation complete"<<'\n';
-    cerr<<"Time required: " <<(double)(clock() - start) / CLOCKS_PER_SEC  <<'\n';
 }
 
-void print_status() {
-    cout<<"Refraction Mode: "<<(REFRACTION_ON ? "ON" : "OFF")<<" (press 'q' to toggle)\n";
-    cout<<"Texture Mode: "<< (TEXTURE_ON ? "ON" : "OFF")<<" (press 'w' to toggle)\n";
+void capture() {
+
+    cout<<"Generating Image...."<<endl;
+
+    clock_t start = clock();
+
+    bitmap_image image(pixels, pixels);
+    image.clear();
+
+    double plane_distance = (window_height/2.0) / tan( (view_angle * PI)/(180.0 *2.0) );
+    Point top_left = camera.pos + camera.l*plane_distance - camera.r*window_width/2 + camera.u*window_height/2;
+    double du = window_width/pixels;
+    double dv = window_height/pixels;
+    top_left = top_left + camera.r * 0.5 * du - camera.u * 0.5 * dv;
+
+    
+    sendRaysThroughAllPixels(top_left, du, dv, image);
+    
+    image.save_image("1705098_out" + to_string(numCaptures++) + ".bmp");
+    cout<<"Image generation complete"<<'\n';
+    cout<<"Time required: " <<(double)(clock() - start) / CLOCKS_PER_SEC  <<'\n';
 }
+
 
 void keyboardListener(unsigned char key, int x,int y){
 
@@ -85,11 +88,6 @@ void keyboardListener(unsigned char key, int x,int y){
             break;
         case 'q':
             REFRACTION_ON ^= 1;
-            print_status();
-            break;
-        case 'w':
-            TEXTURE_ON ^= 1;
-            print_status();
             break;
         case '0':
             capture();
@@ -126,8 +124,9 @@ void specialKeyListener(int key, int x, int y){
 }
 
 
-void draw_axes() {
-
+void display_objects() {
+    
+    //draw axes
     glBegin(GL_LINES);{
 
         glColor3f(1.0, 0, 0);
@@ -142,27 +141,15 @@ void draw_axes() {
         glVertex3f(0,0, INF);
         glVertex3f(0,0,-INF);
     }glEnd();
-}
-
-
-void display_objects() {
-    draw_axes();
 
     for(Object *object: objects) {
         object->draw();
     }
+
     for(Light light: lights) {
         light.draw();
     }
 
-}
-
-void init_eye() {
-
-    camera = Camera();
-    TEXTURE_ON = 0;
-    REFRACTION_ON = 0;
-    print_status();
 }
 
 void display(){
@@ -181,18 +168,10 @@ void display(){
     //initialize the matrix
     glLoadIdentity();
 
-    //now give three info
-    //1. where is the camera (viewer)?
-    //2. where is the camera looking?
-    //3. Which direction is the camera's UP direction?
-
     gluLookAt(camera.pos[0], camera.pos[1], camera.pos[2], camera.pos[0] + camera.l[0], camera.pos[1] + camera.l[1], camera.pos[2] + camera.l[2], camera.u[0], camera.u[1], camera.u[2]);
     //again select MODEL-VIEW
     glMatrixMode(GL_MODELVIEW);
-    /****************************
-    / Add your objects from here
-    ****************************/
-    //add objects
+
     display_objects();
     //ADD this line in the end --- if you use double buffer (i.e. GL_DOUBLE)
     glutSwapBuffers();
@@ -205,7 +184,7 @@ void animate(){
 }
 
 void load_data() {
-    ifstream in(scene_file);
+    ifstream in("scene.txt");
     in>>reflection_level>>pixels;
 
     in>>total_objects;
@@ -227,23 +206,41 @@ void load_data() {
             object = new Triangle(A,B,C);
         }
         else if(shape_name == "general") {
-            /*
-            vector<double>coEffs(10), range(3);
-            for(int j = 0 ; j < 10 ; j++) in>>coEffs[j];
-            Point ref_point;
-            in>>ref_point;
-            for(int j = 0 ; j < 3; j++) in>>range[j];
-            object = new General_surface(coEffs, ref_point, range);
-            */
+            double a, b, c, d, e, f, g, h, i, j;
+            Point refPoint;
+            double length, width, height;
+
+            in >> a >> b >> c >> d >> e >> f >> g >> h >> i >> j;
+            in >> refPoint >> length >> width >> height;
+            object = new General_Surface(a,b,c,d,e,f,g,h,i,j , refPoint, length, width, height);
+
         }
-        else assert(0 && "Unknown shape in input file");
+        else {
+            cout<<"Unknown shape in input file"<<'\n';
+            return;
+        }
+
         in>>object->object_color;
-        for(double & coEfficient : object->coEfficients) in>>coEfficient;
-        in>>object->shine;
+
+        //reflection_coefficients
+        double amb, diff ,spec, refl,shine;
+        in>>amb>>diff>>spec>>refl;
+        in>>shine;
+        object->set_ambient_coEfficient(amb);
+        object->set_diffuse_coEfficient(diff);
+        object->set_specular_coEfficient(spec);
+        object->set_reflection_coEfficient(refl);
+        object->set_shine(shine);
+
+        //push to objects list
         objects.push_back(object);
     }
-    objects.push_back(new Floor(1000, 20));
 
+    //push_back floor object
+    Object *floor = new Floor(floor_width , tile_width);
+    objects.push_back(floor);
+
+    //inupt light src
     in>>total_lights;
     for(int i = 0 ; i < total_lights ; i++) {
         Light light;
@@ -251,13 +248,16 @@ void load_data() {
         in>>light.color;
         lights.push_back(light);
     }
+
     in.close();
 
 }
 
 void init(){
     //codes for initialization
-    init_eye();
+    camera = Camera();
+    REFRACTION_ON = 0;
+
     load_data();
 
     //clear the screen
@@ -277,7 +277,7 @@ void init(){
 
 }
 
-void destroy_objects() {
+void clear_memory() {
     for(int i = 0 ; i < objects.size() ; i++) {
         delete objects[i];
     }
@@ -288,8 +288,6 @@ void destroy_objects() {
 
 
 int main(int argc, char **argv){
-
-    atexit(destroy_objects);
 
     glutInit(&argc,argv);
     glutInitWindowSize(window_width, window_height);
@@ -309,5 +307,7 @@ int main(int argc, char **argv){
     glutSpecialFunc(specialKeyListener);
 
     glutMainLoop();		//The main loop of OpenGL
+
+    //clear_memory();
     return 0;
 }
