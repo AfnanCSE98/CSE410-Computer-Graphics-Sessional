@@ -308,6 +308,6 @@ int main(int argc, char **argv){
 
     glutMainLoop();		//The main loop of OpenGL
 
-    //clear_memory();
+    clear_memory();
     return 0;
 }

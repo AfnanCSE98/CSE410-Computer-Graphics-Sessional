@@ -43,6 +43,7 @@ public:
     Point() {
         memset(pt, 0 , sizeof pt);
     }
+
     Point(double x, double y, double z) {
         pt[0] = x; pt[1] = y; pt[2] = z;
     }
@@ -53,10 +54,12 @@ public:
         down = sqrt(down);
         for(double &x: pt) x /= down;
     }
+
     //operator overloads
     inline double& operator[] (int id) {
         return pt[id];
     }
+
     friend ostream& operator<<(ostream& os, Point& v) {
         os<<" ( ";
         for(int i = 0 ; i < M ; i++ ) {
@@ -66,31 +69,30 @@ public:
         os<<" ) ";
         return os;
     }
+
     friend istream& operator>>(istream& is, Point& v) {
         for(int i = 0 ; i < M; i++ ) is >> v[i] ;
         return is;
     }
-    bool equals( Point p) {
-        for(int i = 0 ; i < M ; i++) {
-            if(p[i] != (*this)[i]) return false;
-        }
-        return true;
-    }
+
     Point operator* (double val) {
         Point ret = *this;
         for(double &x: ret.pt) x *= val;
         return ret;
     }
+
     Point operator/ (double val) {
         Point ret = *this;
         for(double &x: ret.pt) x /= val;
         return ret;
     }
+
     Point operator+ (Point v) {
         Point ret;
         for(int i = 0 ; i < M ; i++) ret[i] = (*this)[i] + v[i];
         return ret;
     }
+
     Point operator- (Point v) {
         Point ret;
         for(int i = 0 ; i < M ; i++) ret[i] = (*this)[i] - v[i];
@@ -123,53 +125,61 @@ public:
     Color() {
         memset(rgb, 0, sizeof rgb);
     }
+
     Color(double r, double g, double b) : Color() {
         rgb[0] = r;
         rgb[1] = g;
         rgb[2] = b;
     }
+
     void clear() {
         memset(rgb, 0, sizeof rgb);
     }
+
     void clamp() {
-        for(double &x: rgb) x = min(1.0, x);
-    }
-    bool equals(Color p) {
-        for(int i = 0 ; i < 3 ; i++) {
-            if(p[i] != (*this)[i]) return false;
+        for(double &x: rgb) {
+            if(x > 1) x = 1;
+            else if(x < 0) x = 0;
         }
-        return true;
     }
+
     double& operator[] (int id) {
         return rgb[id];
     }
+
     Color operator* (const double val) {
         Color ret = *this;
         for(int i = 0 ; i < 3 ; i++) ret[i] = rgb[i] * val;
         return ret;
     }
+
     Color operator/ (const double val) {
         Color ret = *this;
         for(int i = 0 ; i < 3 ; i++) ret[i] = rgb[i] / val;
         return ret;
     }
+
     Color operator* (Color col) {
         Color ret = *this;
         for(int i = 0 ; i < 3 ; i++) ret[i] = rgb[i] * col[i];
         return ret;
     }
+
     Color operator+= (Color col) {
         for(int i = 0 ; i < 3 ; i++) rgb[i] += col[i];
         return *this;
     }
+
     friend istream& operator>>(istream& is, Color& color) {
         for(int i = 0 ; i <3; i++ ) is >> color[i] ;
         return is;
     }
+
     friend ostream& operator<<(ostream& os, Color& c) {
         os<<" ( "<<c[0]<<" , "<<c[1]<<" , "<<c[2]<<" )";
         return os;
     }
+    
 };
 
 //------------------------------------------------------light----------------------------------------------------------------
@@ -682,6 +692,8 @@ class General_Surface : public Object {
     }
 
 };
+
+
 //------------------------------------------------------Floor----------------------------------------------------------------
 class Floor: public Object {
     Point width_from_center;
