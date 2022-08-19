@@ -1,15 +1,59 @@
 #include<bits/stdc++.h>
-#include "1705098_headers.h"
+#include <GL/glut.h>
+#include "1605024_bitmap_image.h"
+#include "1605024_point.h"
+#include "1605024_ray.h"
+#include "1605024_object.h"
+#include "1605024_light.h"
+#include "1605024_config.h"
+#include "1605024_color.h"
 
-using namespace std;
+#include "1605024_floor.h"
+#include "1605024_sphere.h"
+#include "1605024_triangle.h"
+#include "1605024_general_surface.h"
 
 #define pi (2*acos(0.0))
 using namespace std;
 
+const int camera_speed = 2;
 const double window_height = 500, window_width = 500;
 const double view_angle = 80;
 
-Camera camera;
+
+void u_rotation(double angle) {
+    angle *= pi / 180.0;
+    Point rr = r * cos(angle) - l * sin(angle);
+    Point ll = r * sin(angle) + l * cos(angle);
+    r = rr;
+    l = ll;
+}
+
+void r_rotation(double angle) {
+    angle *= pi / 180.0;
+    Point uu = u * cos(angle) + l * sin(angle);
+    Point ll = u * sin(angle)*-1 + l * cos(angle);
+    u = uu;
+    l = ll;
+}
+
+void l_rotation(double angle) {
+    angle *= pi/180.0;
+    Point uu = u * cos(angle) - r * sin(angle);
+    Point rr = u * sin(angle) + r * cos(angle);
+    u = uu;
+    r = rr;
+}
+
+
+void look_left() { u_rotation(-camera_speed); }
+void look_right() { u_rotation(camera_speed); }
+
+void look_up() { r_rotation(-camera_speed); }
+void look_down() { r_rotation(camera_speed); }
+
+void tilt_clockwise() { l_rotation(camera_speed); }
+void tilt_counterclockwise() { l_rotation(-camera_speed); }
 
 void capture() {
 
@@ -21,10 +65,10 @@ void capture() {
     image.clear();
 
     double plane_distance = (window_height/2.0) / tan( (view_angle * PI)/(180.0 *2.0) );
-    Point top_left = camera.pos + camera.l*plane_distance - camera.r*window_width/2 + camera.u*window_height/2;
+    Point top_left = eye + l*plane_distance - r*window_width/2 + u*window_height/2;
     double du = window_width/pixels;
     double dv = window_height/pixels;
-    top_left = top_left + camera.r * 0.5 * du - camera.u * 0.5 * dv;
+    top_left = top_left + r * 0.5 * du - u * 0.5 * dv;
 
     Color color;
     Object *nearest = nullptr;
@@ -32,9 +76,9 @@ void capture() {
     for(int i = 0 ; i < pixels ; i++) {
         for(int j = 0 ; j < pixels; j++) {
 
-            Point current_pixel = top_left + camera.r * du * j  - camera.u * dv * i ;
+            Point current_pixel = top_left + r * du * j  - u * dv * i ;
 
-            Ray ray(camera.pos, current_pixel - camera.pos);
+            Ray ray(eye, current_pixel - eye);
 
             double t_min = INF;
             for(Object *object: objects) {
@@ -66,22 +110,22 @@ void keyboardListener(unsigned char key, int x,int y){
 
     switch(key){
         case '1':
-            camera.look_left();
+            look_left();
             break;
         case '2':
-            camera.look_right();
+            look_right();
             break;
         case '3':
-            camera.look_up();
+            look_up();
             break;
         case '4':
-            camera.look_down();
+            look_down();
             break;
         case '5':
-            camera.tilt_clockwise();
+            tilt_clockwise();
             break;
         case '6':
-            camera.tilt_counter_clockwise();
+            tilt_counterclockwise();
             break;
         case 'q':
             REFRACTION_ON ^= 1;
@@ -103,22 +147,37 @@ void keyboardListener(unsigned char key, int x,int y){
 void specialKeyListener(int key, int x, int y){
     switch(key){
         case GLUT_KEY_DOWN:		//down arrow key
-            camera.down_arrow();
+            eye = eye - l * camera_speed;
             break;
         case GLUT_KEY_UP:		// up arrow key
-            camera.up_arrow();
+            eye = eye + l * camera_speed;
             break;
         case GLUT_KEY_RIGHT:
-            camera.right_arrow();
+            eye = eye + r * camera_speed;
             break;
         case GLUT_KEY_LEFT:
-            camera.left_arrow();
+            eye = eye - r * camera_speed;
             break;
         case GLUT_KEY_PAGE_UP:
-            camera.page_up();
+            eye = eye + u * camera_speed;
             break;
         case GLUT_KEY_PAGE_DOWN:
-            camera.page_down();
+            eye = eye - u * camera_speed;
+            break;
+        default:
+            break;
+    }
+}
+
+void mouseListener(int button, int state, int x, int y){	//x, y is the x-y of the screen (2D)
+    switch(button){
+        case GLUT_LEFT_BUTTON:
+            break;
+
+        case GLUT_RIGHT_BUTTON:
+            break;
+        case GLUT_MIDDLE_BUTTON:
+            //........
             break;
         default:
             break;
@@ -159,7 +218,10 @@ void display_objects() {
 
 void init_eye() {
 
-    camera = Camera();
+    eye = Point(100, 100, 50);
+    r = Point(-1.0/sqrt(2.0), 1.0/sqrt(2.0), 0);
+    l = Point(-1.0/sqrt(2.0), -1.0/sqrt(2.0), 0);
+    u = Point(0, 0, 1);
     TEXTURE_ON = 0;
     REFRACTION_ON = 0;
     print_status();
@@ -186,7 +248,7 @@ void display(){
     //2. where is the camera looking?
     //3. Which direction is the camera's UP direction?
 
-    gluLookAt(camera.pos[0], camera.pos[1], camera.pos[2], camera.pos[0] + camera.l[0], camera.pos[1] + camera.l[1], camera.pos[2] + camera.l[2], camera.u[0], camera.u[1], camera.u[2]);
+    gluLookAt(eye[0], eye[1], eye[2], eye[0] + l[0], eye[1] + l[1], eye[2] + l[2], u[0], u[1], u[2]);
     //again select MODEL-VIEW
     glMatrixMode(GL_MODELVIEW);
     /****************************
@@ -227,14 +289,12 @@ void load_data() {
             object = new Triangle(A,B,C);
         }
         else if(shape_name == "general") {
-            /*
             vector<double>coEffs(10), range(3);
             for(int j = 0 ; j < 10 ; j++) in>>coEffs[j];
             Point ref_point;
             in>>ref_point;
             for(int j = 0 ; j < 3; j++) in>>range[j];
             object = new General_surface(coEffs, ref_point, range);
-            */
         }
         else assert(0 && "Unknown shape in input file");
         in>>object->object_color;
@@ -253,6 +313,7 @@ void load_data() {
     }
     in.close();
 
+    texture_image = bitmap_image(texture_file);
 }
 
 void init(){
@@ -307,6 +368,7 @@ int main(int argc, char **argv){
 
     glutKeyboardFunc(keyboardListener);
     glutSpecialFunc(specialKeyListener);
+    glutMouseFunc(mouseListener);
 
     glutMainLoop();		//The main loop of OpenGL
     return 0;

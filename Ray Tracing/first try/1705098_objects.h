@@ -1,7 +1,11 @@
-#include <vector>
+#ifndef OFFLINE3_1705098_OBJECTS_H
+#define OFFLINE3_1705098_OBJECTS_H
+
+#endif 
+
 #include <bits/stdc++.h>
 #include "1705098_color.h"
-#include "1705098_vector.h"
+//#include "1705098_vector.h"
 #include "1705098_opengl_util.h"
 
 #define pi 3.1416
@@ -200,13 +204,16 @@ public:
         pos.y = 0;
         pos.z = 200;
 
-        l.x = 0;
-        l.y =  0;
-        l.z =  -1;
+        l.x = -0.152173;
+        l.y =  0.138297;
+        l.z =  -0.950123;
 
-        r.x = -1 / sqrt(2.0);
-        r.y = 1 / sqrt(2.0);
+        //r.x = -1 / sqrt(2.0);
+        r.x = 0.4712;
+        r.y = 0.51856;
         r.z = 0;
+        //r.y = 1 / sqrt(2.0);
+        //r.z = 0;
 
         u = l * r;
 
@@ -214,6 +221,17 @@ public:
         aspectRatio = 1;
         nearPlane = 1;
         farPlane = 1000;
+    }
+
+    void print() const {
+        cout<<"Pos:";
+        pos.print();
+        cout<<"l:";
+        l.print();
+        cout<<"r:";
+        r.print();
+        cout<<"u:";
+        u.print();
     }
 
 };
@@ -334,4 +352,8 @@ public:
         }
     }
 
+<<<<<<< HEAD:Ray Tracing/1705098_objects.h
 };
+=======
+};
+>>>>>>> 8fd3125f8d473698a57bbed0e30334b5cce88664:Ray Tracing/first try/1705098_objects.h
