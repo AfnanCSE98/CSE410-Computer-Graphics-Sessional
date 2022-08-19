@@ -168,7 +168,7 @@ void display(){
     //initialize the matrix
     glLoadIdentity();
 
-    gluLookAt(camera.pos[0], camera.pos[1], camera.pos[2], camera.pos[0] + camera.l[0], camera.pos[1] + camera.l[1], camera.pos[2] + camera.l[2], camera.u[0], camera.u[1], camera.u[2]);
+    gluLookAt(camera.pos.x, camera.pos.y, camera.pos.z, camera.pos.x + camera.l.x, camera.pos.y + camera.l.y, camera.pos.z + camera.l.z, camera.u.x, camera.u.y, camera.u.z);
     //again select MODEL-VIEW
     glMatrixMode(GL_MODELVIEW);
 
