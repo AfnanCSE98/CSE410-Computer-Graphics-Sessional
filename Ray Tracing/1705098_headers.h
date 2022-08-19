@@ -429,9 +429,13 @@ public:
 
             //check for spotlight
             if(light.is_spotlight){
-                double ang = util::get_angle(light_to_point_ray.dir, light.dir) ; 
-                double cut_ang = 1.0 * light.get_cutoff_angle() - EPS;
-                if(ang < cut_ang) continue;
+                double ang = util::get_angle(light_to_point_ray.dir, light.dir) + 3; 
+                double cut_ang = 1.0 * light.get_cutoff_angle() + 3;
+                //cout<<ang<<" "<<cut_ang<<endl;
+                if(ang < cut_ang) {
+                    //cout<<ang<<" "<<cut_ang<<endl; 
+                    continue;
+                }
             }
 
             double t_tgt = util::distance(intersection_point, light_to_point_ray.start) - EPS;
