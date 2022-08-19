@@ -1,7 +1,7 @@
 #ifndef OFFLINE_1705098_HEADERS_H
 #define OFFLINE_1705098_HEADERS_H
 
-#endif 
+#endif
 #include <GL/glut.h>
 #include "1705098_bitmap_image.h"
 #include <bits/stdc++.h>
@@ -37,68 +37,72 @@ const int tile_width = 20;
 const int M = 3;
 class Point {
 public:
-    
-    double pt[M];
 
-    Point() {
-        memset(pt, 0 , sizeof pt);
-    }
+    double x,y,z;
+
+    Point(){}
 
     Point(double x, double y, double z) {
-        pt[0] = x; pt[1] = y; pt[2] = z;
-    }
-   
-    void normalize() {
-        double down = 0;
-        for(double x : pt) down += x*x;
-        down = sqrt(down);
-        for(double &x: pt) x /= down;
+        this->x = x;
+        this->y = y;
+        this->z = z;
     }
 
-    //operator overloads
-    inline double& operator[] (int id) {
-        return pt[id];
+    void normalize() {
+        double down = x*x + y*y + z*z;
+        down = sqrt(down);
+        x /= down;
+        y /= down;
+        z /= down;
     }
 
     friend ostream& operator<<(ostream& os, Point& v) {
         os<<" ( ";
-        for(int i = 0 ; i < M ; i++ ) {
-            os << v[i];
-            if(i < M - 1) os << ", ";
-        }
+        os<<v.x<<" "<<v.y<<" "<<v.z;
         os<<" ) ";
         return os;
     }
 
     friend istream& operator>>(istream& is, Point& v) {
-        for(int i = 0 ; i < M; i++ ) is >> v[i] ;
+        is >> v.x ;
+        is >> v.y ;
+        is >> v.z ;
         return is;
     }
 
     Point operator* (double val) {
         Point ret = *this;
-        for(double &x: ret.pt) x *= val;
+        ret.x *= val;
+        ret.y *= val;
+        ret.z *= val;
         return ret;
     }
 
+    //
+
     Point operator/ (double val) {
         Point ret = *this;
-        for(double &x: ret.pt) x /= val;
+        ret.x /= val;
+        ret.y /= val;
+        ret.z /= val;
         return ret;
     }
 
     Point operator+ (Point v) {
         Point ret;
-        for(int i = 0 ; i < M ; i++) ret[i] = (*this)[i] + v[i];
+        ret.x = (*this).x + v.x;
+        ret.y = (*this).y + v.y;
+        ret.z = (*this).z + v.z;
         return ret;
     }
 
     Point operator- (Point v) {
         Point ret;
-        for(int i = 0 ; i < M ; i++) ret[i] = (*this)[i] - v[i];
+        ret.x = (*this).x - v.x;
+        ret.y = (*this).y - v.y;
+        ret.z = (*this).z - v.z;
         return ret;
     }
-    
 
 };
 
@@ -179,7 +183,7 @@ public:
         os<<" ( "<<c[0]<<" , "<<c[1]<<" , "<<c[2]<<" )";
         return os;
     }
-    
+
 };
 
 //------------------------------------------------------light----------------------------------------------------------------
@@ -190,11 +194,12 @@ public:
     bool is_spotlight;
     Point dir;
     double cutoff_angle;
+
     void draw() {
         glPointSize(5);
         glColor3f(color[0], color[1], color[2]);
         glBegin(GL_POINTS);
-        glVertex3f(light_pos[0], light_pos[1], light_pos[2]);
+        glVertex3f(light_pos.x, light_pos.y, light_pos.z);
         glEnd();
     }
 
@@ -218,15 +223,15 @@ class util {
 
     static double distance(Point p1, Point p2) {
         double ret = 0;
-        for(int i = 0  ; i < M ; i++) ret += (p1[i] - p2[i]) * (p1[i] - p2[i]);
+        ret += (p1.x - p2.x) * (p1.x - p2.x);
         return sqrt(ret);
     }
 
     static double dot(Point v1, Point v2) {
         double ret = 0;
-        for(int i = 0 ; i < M ; i++ ) {
-            ret += v1[i] * v2[i];
-        }
+        ret += v1.x * v2.x;
+        ret += v1.y * v2.y;
+        ret += v1.z * v2.z;
         return ret;
     }
 
@@ -236,12 +241,12 @@ class util {
         //both p1 and p2 are normalized
         return acos(ret);
     }
-    
+
     static Point cross(Point v1, Point v2) {
         Point ret;
-        ret[0] = v1[1] * v2[2] - v1[2] * v2[1];
-        ret[1] = -v1[0] * v2[2] + v1[2] * v2[0];
-        ret[2] = v1[0] * v2[1] - v1[1] * v2[0];
+        ret.x = v1.y * v2.z - v1.z * v2.y;
+        ret.y = -v1.x * v2.z + v1.z * v2.x;
+        ret.z = v1.x * v2.y - v1.y * v2.x;
         return ret;
     }
 
@@ -253,7 +258,6 @@ class util {
 
     static Point get_refraction_vector(Point &I, Point &N, Point &intersecting_point) {
         double eta = 1.5;
-        //eta = is_inside(intersecting_point) ? (1 / eta) : eta ;
         double N_dot_I = dot(N, I);
         double k = 1.0 - eta * eta * (1.0 - N_dot_I * N_dot_I);
         // if(k < 0) {
@@ -263,7 +267,6 @@ class util {
         return I * eta - N * (eta * N_dot_I - sqrt(1 - k));
     }
 
-
     //following 4 func are for triangle class
     static double get_determinant(double a[3][3]) {
         return a[0][0] * (a[1][1] * a[2][2] - a[1][2] * a[2][1]) - a[0][1] * (a[1][0] * a[2][2] - a[1][2] * a[2][0]) + a[0][2] * (a[1][0] * a[2][1] - a[1][1] * a[2][0]);
@@ -271,9 +274,9 @@ class util {
 
     static double get_beta(Ray &ray , double D , Point A , Point C) {
          double mat[3][3] = {
-                { A[0] - ray.start[0] , A[0] - C[0] , ray.dir[0] },
-                { A[1] - ray.start[1] , A[1] - C[1] , ray.dir[1] },
-                { A[2] - ray.start[2] , A[2] - C[2] , ray.dir[2] },
+                { A.x - ray.start.x , A.x - C.x , ray.dir.x },
+                { A.y - ray.start.y , A.y - C.y , ray.dir.y },
+                { A.z - ray.start.z , A.z - C.z , ray.dir.z },
         };
         double beta = get_determinant(mat) / D;
         return beta;
@@ -281,9 +284,9 @@ class util {
 
     static double get_gamma(Ray &ray , double D , Point A , Point B) {
         double mat[3][3] = {
-                { A[0] - B[0] , A[0] - ray.start[0] , ray.dir[0] },
-                { A[1] - B[1] , A[1] - ray.start[1] , ray.dir[1] },
-                { A[2] - B[2] , A[2] - ray.start[2] , ray.dir[2] },
+                { A.x - B.x , A.x - ray.start.x , ray.dir.x },
+                { A.y - B.y , A.y - ray.start.y , ray.dir.y },
+                { A.z - B.z , A.z - ray.start.z , ray.dir.z },
         };
         double gamma = get_determinant(mat) / D;
         return gamma;
@@ -291,9 +294,9 @@ class util {
 
     static double get_t(Ray &ray , double D , Point A , Point B , Point C) {
         double mat[3][3] = {
-                { A[0] - B[0] , A[0] - C[0] , A[0] - ray.start[0] },
-                { A[1] - B[1] , A[1] - C[1] , A[1] - ray.start[1] },
-                { A[2] - B[2] , A[2] - C[2] , A[2] - ray.start[2] },
+                { A.x - B.x , A.x - C.x , A.x - ray.start.x },
+                { A.y - B.y , A.y - C.y , A.y - ray.start.y },
+                { A.z - B.z , A.z - C.z , A.z - ray.start.z },
         };
 
         double t = get_determinant(mat) / D;
@@ -314,8 +317,6 @@ class util {
 
         return -1;
     }
-
-
 };
 
 
@@ -367,7 +368,7 @@ public:
         Ray reflecting_ray(intersection_point + R * EPS, R);//without adding R*EPS , the image doesnt become smooth
 
         double reflected_t_min = INF;
-        
+
         //find the nearest object to which the ray is reflected
         for(Object *object: objects) {
             //put level = 0 since we are not performing reflection yet rather finding the nearest object to which the ray is reflected
@@ -429,11 +430,11 @@ public:
 
             //check for spotlight
             if(light.is_spotlight){
-                double ang = util::get_angle(light_to_point_ray.dir, light.dir) + 3; 
+                double ang = util::get_angle(light_to_point_ray.dir, light.dir) + 3;
                 double cut_ang = 1.0 * light.get_cutoff_angle() + 3;
                 //cout<<ang<<" "<<cut_ang<<endl;
                 if(ang < cut_ang) {
-                    //cout<<ang<<" "<<cut_ang<<endl; 
+                    //cout<<ang<<" "<<cut_ang<<endl;
                     continue;
                 }
             }
@@ -491,9 +492,9 @@ public:
             double h = radius * sin(((double) i / (double) stacks ) * (PI / 2 ) ) ;
             double r = radius * cos(((double) i / (double) stacks ) * (PI / 2));
             for(int j = 0; j <= slices ; j++) {
-                points[i][j][0] = r * cos( ( (double) j / (double) slices ) * 2 * PI);
-                points[i][j][1] = r * sin( ( (double) j / (double) slices ) * 2 * PI);
-                points[i][j][2] = h;
+                points[i][j].x = r * cos( ( (double) j / (double) slices ) * 2 * PI);
+                points[i][j].y = r * sin( ( (double) j / (double) slices ) * 2 * PI);
+                points[i][j].z = h;
             }
         }
         //draw quads using generated points
@@ -503,19 +504,19 @@ public:
 
                 glPushMatrix();
                 {
-                    glTranslatef(center[0], center[1], center[2]);
+                    glTranslatef(center.x, center.y, center.z);
                     glBegin(GL_QUADS);
                     {
                         //upper hemisphere
-                        glVertex3f(points[i][j][0], points[i][j][1], points[i][j][2]);
-                        glVertex3f(points[i][j + 1][0], points[i][j + 1][1], points[i][j + 1][2]);
-                        glVertex3f(points[i + 1][j + 1][0], points[i + 1][j + 1][1], points[i + 1][j + 1][2]);
-                        glVertex3f(points[i + 1][j][0], points[i + 1][j][1], points[i + 1][j][2]);
+                        glVertex3f(points[i][j].x, points[i][j].y, points[i][j].z);
+                        glVertex3f(points[i][j + 1].x, points[i][j + 1].y, points[i][j + 1].z);
+                        glVertex3f(points[i + 1][j + 1].x, points[i + 1][j + 1].y, points[i + 1][j + 1].z);
+                        glVertex3f(points[i + 1][j].x, points[i + 1][j].y, points[i + 1][j].z);
                         //lower hemisphere
-                        glVertex3f(points[i][j][0], points[i][j][1], -points[i][j][2]);
-                        glVertex3f(points[i][j + 1][0], points[i][j + 1][1], -points[i][j + 1][2]);
-                        glVertex3f(points[i + 1][j + 1][0], points[i + 1][j + 1][1], -points[i + 1][j + 1][2]);
-                        glVertex3f(points[i + 1][j][0], points[i + 1][j][1], -points[i + 1][j][2]);
+                        glVertex3f(points[i][j].x, points[i][j].y, -points[i][j].z);
+                        glVertex3f(points[i][j + 1].x, points[i][j + 1].y, -points[i][j + 1].z);
+                        glVertex3f(points[i + 1][j + 1].x, points[i + 1][j + 1].y, -points[i + 1][j + 1].z);
+                        glVertex3f(points[i + 1][j].x, points[i + 1][j].y, -points[i + 1][j].z);
                     }
                     glEnd();
                 }
@@ -523,10 +524,6 @@ public:
             }
         }
     }
-
-    /*
-     * Reference: http://www.ambrsoft.com/TrigoCalc/Sphere/SpherLineIntersection_.htm
-     */
 
     double get_intersecting_t(Ray &ray) override {
         Point pt = center - ray.start;
@@ -538,8 +535,8 @@ public:
         D = sqrt(D);
 
         double ret = INF;
-        double t1 = (-b + D) / 2.0;
-        double t2 = (-b - D) / 2.0;
+        double t1 = (-b + D) * 0.5;
+        double t2 = (-b - D) * 0.5;
         if(t1 > 0) ret = min(ret, t1);
         if(t2 > 0) ret = min(ret, t2);
         if(ret == INF) ret = -1;
@@ -579,12 +576,15 @@ class Equation {
         this->h = h;
         this->i = i;
     }
+
     double get_x() {
         return (-b * e * i + b * f * g + c * d * i - c * f * h - a * d * g + a * e * h) / (a * e * h - a * d * g + b * d * f - b * e * i + c * e * g - c * d * h);
     }
+    
     double get_y() {
         return (a * f * i - a * e * g - b * d * i + b * e * h + c * d * g - c * f * h) / (a * e * h - a * d * g + b * d * f - b * e * i + c * e * g - c * d * h);
     }
+    
     double get_z() {
         return (a * e * g - a * d * h - b * d * g + b * e * h + c * d * h - c * e * g) / (a * e * h - a * d * g + b * d * f - b * e * i + c * e * g - c * d * h);
     }
@@ -593,18 +593,19 @@ class Equation {
 class Triangle: public Object {
     Point A, B, C;
 public:
+    
     Triangle(Point &a, Point &b, Point &c) {
         A = a;
         B = b;
         C = c;
-        
     }
+
     void draw() override {
         glBegin(GL_TRIANGLES);
         glColor3f(object_color[0], object_color[1], object_color[2]);
-        glVertex3f(A[0], A[1], A[2]);
-        glVertex3f(B[0], B[1], B[2]);
-        glVertex3f(C[0], C[1], C[2]);
+        glVertex3f(A.x, A.y, A.z);
+        glVertex3f(B.x, B.y, B.z);
+        glVertex3f(C.x, C.y, C.z);
         glEnd();
     }
 
@@ -617,9 +618,9 @@ public:
     double get_intersecting_t(Ray &ray) override {
 
         double mat1[3][3] = {
-                { A[0] - B[0],  A[0] - C[0], ray.dir[0] },
-                { A[1] - B[1],  A[1] - C[1], ray.dir[1] },
-                { A[2] - B[2],  A[2] - C[2], ray.dir[2] },
+                { A.x - B.x,  A.x - C.x, ray.dir.x },
+                { A.y - B.y,  A.y - C.y, ray.dir.y },
+                { A.z - B.z,  A.z - C.z, ray.dir.z },
         };
         double D = util::get_determinant(mat1);
         if(D == 0) return -1;
@@ -673,19 +674,29 @@ class General_Surface : public Object {
 
     bool is_inside(Point &point) override {
         double lns[] = {length, width, height};
-        for(int idx = 0; idx < 3; idx++)
-        {
+        
+        for(int idx = 0; idx < 3; idx++) {
             if(fabs(lns[idx]) < EPS) continue;
-            if(point[idx] < refPoint[idx]) return false;
-            if(point[idx] > refPoint[idx]+lns[idx]) return false;
+            if(idx == 0){
+                  if(point.x < refPoint.x) return false;
+                  if(point.x > refPoint.x+length) return false;
+            }
+            else if(idx==1){
+                  if(point.y < refPoint.y) return false;
+                if(point.y > refPoint.y+width) return false;
+            }
+            else{
+                if(point.z < refPoint.z) return false;
+                 if(point.z > refPoint.z+height) return false;
+            }
         }
 
         return true;
     }
 
     double get_intersecting_t(Ray &ray) override {
-        double x0 = ray.start[0], y0 = ray.start[1], z0 = ray.start[2];
-        double x1 = ray.dir[0], y1 = ray.dir[1], z1 = ray.dir[2];
+        double x0 = ray.start.x, y0 = ray.start.y, z0 = ray.start.z;
+        double x1 = ray.dir.x, y1 = ray.dir.y, z1 = ray.dir.z;
 
         double c0 = a*x1*x1 + b*y1*y1 + c*z1*z1 + d*x1*y1 + e*x1*z1 + f*y1*z1;
         double c1 = 2*a*x0*x1 + 2*b*y0*y1 + 2*c*z0*z1 + d*(x0*y1 + x1*y0) + e*(x0*z1 + x1*z0);
@@ -705,7 +716,7 @@ class General_Surface : public Object {
             Point kache = ray.start + ray.dir * t1;
             if(is_inside(kache)) return t1;
         }
-        
+
         if(t2 > 0)
         {
             //cout << "t2 paise :'(" << endl;
@@ -717,7 +728,7 @@ class General_Surface : public Object {
     }
 
     Point get_normal(Point intersection_point) override {
-        double x = intersection_point[0], y = intersection_point[1], z = intersection_point[2];
+        double x = intersection_point.x, y = intersection_point.y, z = intersection_point.z;
         Point normal = Point (2*a*x + d*y + e*z + g, 2*b*y + d*x + f*z + h, 2*c*z + e*x + f*y + i);
         normal.normalize();
         return normal;
@@ -749,8 +760,8 @@ public:
 
     void draw() override {
         bool white = false;
-        for(double i = -width_from_center[0]; i <= width_from_center[0] ; i += tile_width) {
-            for(double j = -width_from_center[1] ; j <= width_from_center[1] ; j += tile_width) {
+        for(double i = -width_from_center.x; i <= width_from_center.x ; i += tile_width) {
+            for(double j = -width_from_center.y ; j <= width_from_center.y ; j += tile_width) {
                 if(white) glColor3f(1,1,1);
                 else glColor3f(0,0,0);
                 glBegin(GL_QUADS); {
@@ -769,19 +780,19 @@ public:
     }
 
     double get_intersecting_t(Ray &ray) override {
-        if(ray.dir[2] == 0) return -1;
+        if(ray.dir.z == 0) return -1;
 
-        double t = - ray.start[2] / ray.dir[2];
+        double t = - ray.start.z / ray.dir.z;
         Point pt = ray.start + ray.dir * t;
         if(t < 0) return -1;
-        if(pt[0] < -width_from_center[0] || pt[0] > width_from_center[0]) return -1;
-        if(pt[1] < -width_from_center[1] || pt[1] > width_from_center[1]) return -1;
+        if(pt.x < -width_from_center.x || pt.x > width_from_center.x) return -1;
+        if(pt.y < -width_from_center.y || pt.y > width_from_center.y) return -1;
         return t;
     }
 
     Color get_object_color(Point &p) override {
-        int ro_id = (int) ( (p[0] + width_from_center[0]) / tile_width );
-        int col_id = (int) ( (p[1] + width_from_center[1]) / tile_width );
+        int ro_id = (int) ( (p.x + width_from_center.x) / tile_width );
+        int col_id = (int) ( (p.y + width_from_center.y) / tile_width );
         if( (ro_id + col_id) % 2 ) return Color(1, 1, 1);
         //cout<<"ro_id: "<<ro_id<<" col_id: "<<col_id<<endl;
         return Color(0,0,0);
@@ -801,7 +812,7 @@ public:
     int farPlane;
     double camera_speed;
     double rotate_angle;
-        
+
     Camera() {
 
         pos = Point(cam_pos_x , cam_pos_y , cam_pos_z);

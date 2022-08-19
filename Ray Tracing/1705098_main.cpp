@@ -45,8 +45,6 @@ void capture() {
 
     cout<<"Generating Image...."<<endl;
 
-    clock_t start = clock();
-
     bitmap_image image(pixels, pixels);
     image.clear();
 
@@ -55,13 +53,11 @@ void capture() {
     double du = window_width/pixels;
     double dv = window_height/pixels;
     top_left = top_left + camera.r * 0.5 * du - camera.u * 0.5 * dv;
-
     
     sendRaysThroughAllPixels(top_left, du, dv, image);
     
     image.save_image("1705098_out_" + to_string(++numCaptures) + ".bmp");
     cout<<"Image generation complete"<<'\n';
-    cout<<"Time required: " <<(double)(clock() - start) / CLOCKS_PER_SEC  <<'\n';
 }
 
 
@@ -168,8 +164,8 @@ void display(){
     //initialize the matrix
     glLoadIdentity();
 
-    gluLookAt(camera.pos[0], camera.pos[1], camera.pos[2], camera.pos[0] + camera.l[0], camera.pos[1] + camera.l[1], camera.pos[2] + camera.l[2], camera.u[0], camera.u[1], camera.u[2]);
-    //again select MODEL-VIEW
+   gluLookAt(camera.pos.x, camera.pos.y, camera.pos.z, camera.pos.x + camera.l.x, camera.pos.y + camera.l.y, camera.pos.z + camera.l.z, camera.u.x, camera.u.y, camera.u.z);
+   //again select MODEL-VIEW
     glMatrixMode(GL_MODELVIEW);
 
     display_objects();
