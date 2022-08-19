@@ -9,6 +9,7 @@ using namespace std;
 const double window_height = 500, window_width = 500;
 const double view_angle = 80;
 int numCaptures = 0;
+int video_demo = 0;
 
 Camera camera;
 
@@ -60,30 +61,37 @@ void capture() {
     cout<<"Image generation complete"<<'\n';
 }
 
-
+void onkchobi(){
+    for(int i = 0 ; i < 10 ; i++) {
+      capture();
+    }
+}
 void keyboardListener(unsigned char key, int x,int y){
 
     switch(key){
         case '1':
-            camera.look_left();
+            camera.look_left();if(video_demo)onkchobi();
             break;
         case '2':
-            camera.look_right();
+            camera.look_right();if(video_demo)onkchobi();
             break;
         case '3':
-            camera.look_up();
+            camera.look_up();if(video_demo)onkchobi();
             break;
         case '4':
-            camera.look_down();
+            camera.look_down();if(video_demo)onkchobi();
             break;
         case '5':
-            camera.tilt_clockwise();
+            camera.tilt_clockwise();if(video_demo)onkchobi();
             break;
         case '6':
-            camera.tilt_counter_clockwise();
+            camera.tilt_counter_clockwise();if(video_demo)onkchobi();
             break;
         case 'r':
             REFRACTION_ON ^= 1;
+            break;
+        case 'v':
+            video_demo ^= 1;
             break;
         case '0':
             capture();
@@ -97,22 +105,22 @@ void keyboardListener(unsigned char key, int x,int y){
 void specialKeyListener(int key, int x, int y){
     switch(key){
         case GLUT_KEY_DOWN:		//down arrow key
-            camera.down_arrow();
+            camera.down_arrow();if(video_demo)onkchobi();
             break;
         case GLUT_KEY_UP:		// up arrow key
-            camera.up_arrow();
+            camera.up_arrow();if(video_demo)onkchobi();
             break;
         case GLUT_KEY_RIGHT:
-            camera.right_arrow();
+            camera.right_arrow();if(video_demo)onkchobi();
             break;
         case GLUT_KEY_LEFT:
-            camera.left_arrow();
+            camera.left_arrow();if(video_demo)onkchobi();
             break;
         case GLUT_KEY_PAGE_UP:
-            camera.page_up();
+            camera.page_up();if(video_demo)onkchobi();
             break;
         case GLUT_KEY_PAGE_DOWN:
-            camera.page_down();
+            camera.page_down();if(video_demo)onkchobi();
             break;
         default:
             break;
@@ -255,7 +263,6 @@ void load_data() {
         Point dir;double cutoff_angle;
         in>>dir;
         in>>cutoff_angle;
-        cout<<cutoff_angle<<'\n';
         light.set_spotlight(true , dir, cutoff_angle);
         lights.push_back(light);
     }

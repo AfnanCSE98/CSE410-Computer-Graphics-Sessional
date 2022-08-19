@@ -7,34 +7,32 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-//configs
 
 class Object;
 class Light;
 class Point;
-#define PI acos(-1)
 
+#define PI acos(-1)
 const int INF = 1e4;
 const double EPS = 1e-7;
 const double RGB = 255;
 
 
-static int REFRACTION_ON;
-static int reflection_level, pixels, total_objects, total_lights;
-
-
-static vector<Object*>objects;
-static vector<Light>lights;
-
 const int cam_pos_x = 100;
 const int cam_pos_y = 100;
 const int cam_pos_z = 50;
+
+static int REFRACTION_ON;
+static int reflection_level, pixels, total_objects, total_lights;
+
+static vector<Object*>objects;
+static vector<Light>lights;
 
 const int floor_width = 1000;
 const int tile_width = 20;
 
 //------------------------------------------------------------------------------point----------------------------------------------------------------------------------------------
-const int M = 3;
+
 class Point {
 public:
 
@@ -70,15 +68,7 @@ public:
         return is;
     }
 
-    // Point operator* (double val) {
-    //     Point ret = *this;
-    //     ret.x *= val;
-    //     ret.y *= val;
-    //     ret.z *= val;
-    //     return ret;
-    // }
 
-    //method to multiply with a value
     Point mul(double val) {
         Point ret = *this;
         ret.x *= val;
@@ -87,15 +77,6 @@ public:
         return ret;
     }
 
-    // Point operator/ (double val) {
-    //     Point ret = *this;
-    //     ret.x /= val;
-    //     ret.y /= val;
-    //     ret.z /= val;
-    //     return ret;
-    // }
-
-    //function to divide point by a val
     Point div(double val) {
         Point ret = *this;
         ret.x /= val;
@@ -104,15 +85,6 @@ public:
         return ret;
     }
 
-    // Point operator+ (Point v) {
-    //     Point ret;
-    //     ret.x = (*this).x + v.x;
-    //     ret.y = (*this).y + v.y;
-    //     ret.z = (*this).z + v.z;
-    //     return ret;
-    // }
-
-    //function to add two points
     Point add(Point v) {
         Point ret;
         ret.x = (*this).x + v.x;
@@ -121,15 +93,6 @@ public:
         return ret;
     }
 
-    // Point operator- (Point v) {
-    //     Point ret;
-    //     ret.x = (*this).x - v.x;
-    //     ret.y = (*this).y - v.y;
-    //     ret.z = (*this).z - v.z;
-    //     return ret;
-    // }
-
-    //function to subtract two points
     Point sub(Point v) {
         Point ret;
         ret.x = (*this).x - v.x;
@@ -288,7 +251,6 @@ class util {
     //get angle betwen two point
     static double get_angle(Point p1, Point p2) {
         double ret = dot(p1, p2);
-        //both p1 and p2 are normalized
         return acos(ret);
     }
 
@@ -306,6 +268,9 @@ class util {
         return ret;
     }
 
+    /*
+    https://stackoverflow.com/a/58676386/11837247
+    */
     static Point get_refraction_vector(Point &I, Point &N, Point &intersecting_point) {
         double eta = 1.5;
         double N_dot_I = dot(N, I);
@@ -454,7 +419,7 @@ public:
         if(refracted_t_min != INF) {
             refracted_color.clear();
             nearest->intersect(refracting_ray, refracted_color, level + 1);
-            color += refracted_color * (reflection_coEfficient/2.0);
+            color += refracted_color * (reflection_coEfficient*0.5);
         }
     }
 
@@ -478,7 +443,7 @@ public:
             //check for spotlight
             if(light.is_spotlight){
                 double ang = util::get_angle(light_to_point_ray.dir, light.dir) + 3;
-                double cut_ang = 1.0 * light.get_cutoff_angle() + 3;
+                double cut_ang = light.get_cutoff_angle() + 3;
                 //cout<<ang<<" "<<cut_ang<<endl;
                 if(ang < cut_ang) {
                     //cout<<ang<<" "<<cut_ang<<endl;
