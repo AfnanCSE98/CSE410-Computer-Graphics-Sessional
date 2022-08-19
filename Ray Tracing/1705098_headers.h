@@ -686,12 +686,18 @@ class General_Surface : public Object {
 
     bool is_inside(Point &point) override {
         double lns[] = {length, width, height};
-        for(int idx = 0; idx < 3; idx++)
-        {
-            if(fabs(lns[idx]) < EPS) continue;
-            if(point[idx] < refPoint[idx]) return false;
-            if(point[idx] > refPoint[idx]+lns[idx]) return false;
-        }
+        
+        //if(fabs(length) < EPS) continue;
+        if(point.x < refPoint.x) return false;
+        if(point.x > refPoint.x+length) return false;
+
+        //if(fabs(length) < EPS) continue;
+        if(point.x < refPoint.x) return false;
+        if(point.x > refPoint.x+length) return false;
+
+        //if(fabs(length) < EPS) continue;
+        if(point.x < refPoint.x) return false;
+        if(point.x > refPoint.x+length) return false;
 
         return true;
     }
@@ -787,14 +793,14 @@ public:
         double t = - ray.start.z / ray.dir.z;
         Point pt = ray.start + ray.dir * t;
         if(t < 0) return -1;
-        if(pt[0] < -width_from_center[0] || pt[0] > width_from_center[0]) return -1;
-        if(pt[1] < -width_from_center[1] || pt[1] > width_from_center[1]) return -1;
+        if(pt.x < -width_from_center.x || pt.x > width_from_center.x) return -1;
+        if(pt.y < -width_from_center.y || pt.y > width_from_center.y) return -1;
         return t;
     }
 
     Color get_object_color(Point &p) override {
-        int ro_id = (int) ( (p[0] + width_from_center[0]) / tile_width );
-        int col_id = (int) ( (p[1] + width_from_center[1]) / tile_width );
+        int ro_id = (int) ( (p.x + width_from_center.x) / tile_width );
+        int col_id = (int) ( (p.y + width_from_center.y) / tile_width );
         if( (ro_id + col_id) % 2 ) return Color(1, 1, 1);
         //cout<<"ro_id: "<<ro_id<<" col_id: "<<col_id<<endl;
         return Color(0,0,0);
