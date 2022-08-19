@@ -1,1 +1,0 @@
-g++ 1705098_main.cpp -lGL -lGLU -lglut && ./a.out
