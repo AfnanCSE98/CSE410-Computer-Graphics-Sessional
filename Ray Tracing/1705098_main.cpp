@@ -59,7 +59,7 @@ void capture() {
     
     sendRaysThroughAllPixels(top_left, du, dv, image);
     
-    image.save_image("1705098_out" + to_string(numCaptures++) + ".bmp");
+    image.save_image("1705098_out_" + to_string(++numCaptures) + ".bmp");
     cout<<"Image generation complete"<<'\n';
     cout<<"Time required: " <<(double)(clock() - start) / CLOCKS_PER_SEC  <<'\n';
 }
@@ -86,7 +86,7 @@ void keyboardListener(unsigned char key, int x,int y){
         case '6':
             camera.tilt_counter_clockwise();
             break;
-        case 'q':
+        case 'r':
             REFRACTION_ON ^= 1;
             break;
         case '0':
@@ -246,6 +246,21 @@ void load_data() {
         Light light;
         in>>light.light_pos;
         in>>light.color;
+        lights.push_back(light);
+    }
+    //cout<<total_lights<<" lights loaded"<<'\n';
+    int total_spotlights;
+    in>>total_spotlights;
+    for(int i=0 ; i<total_spotlights ; i++){
+        Light light;
+        in>>light.light_pos;
+        in>>light.color;
+
+        Point dir;double cutoff_angle;
+        in>>dir;
+        in>>cutoff_angle;
+        cout<<cutoff_angle<<'\n';
+        light.set_spotlight(true , dir, cutoff_angle);
         lights.push_back(light);
     }
 
