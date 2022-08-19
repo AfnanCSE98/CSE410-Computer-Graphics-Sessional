@@ -70,16 +70,7 @@ public:
         return is;
     }
 
-    // Point operator* (double val) {
-    //     Point ret = *this;
-    //     ret.x *= val;
-    //     ret.y *= val;
-    //     ret.z *= val;
-    //     return ret;
-    // }
-
-    //method to multiply with a value
-    Point mul(double val) {
+    Point operator* (double val) {
         Point ret = *this;
         ret.x *= val;
         ret.y *= val;
@@ -87,16 +78,9 @@ public:
         return ret;
     }
 
-    // Point operator/ (double val) {
-    //     Point ret = *this;
-    //     ret.x /= val;
-    //     ret.y /= val;
-    //     ret.z /= val;
-    //     return ret;
-    // }
+    //
 
-    //function to divide point by a val
-    Point div(double val) {
+    Point operator/ (double val) {
         Point ret = *this;
         ret.x /= val;
         ret.y /= val;
@@ -104,16 +88,7 @@ public:
         return ret;
     }
 
-    // Point operator+ (Point v) {
-    //     Point ret;
-    //     ret.x = (*this).x + v.x;
-    //     ret.y = (*this).y + v.y;
-    //     ret.z = (*this).z + v.z;
-    //     return ret;
-    // }
-
-    //function to add two points
-    Point add(Point v) {
+    Point operator+ (Point v) {
         Point ret;
         ret.x = (*this).x + v.x;
         ret.y = (*this).y + v.y;
@@ -121,16 +96,7 @@ public:
         return ret;
     }
 
-    // Point operator- (Point v) {
-    //     Point ret;
-    //     ret.x = (*this).x - v.x;
-    //     ret.y = (*this).y - v.y;
-    //     ret.z = (*this).z - v.z;
-    //     return ret;
-    // }
-
-    //function to subtract two points
-    Point sub(Point v) {
+    Point operator- (Point v) {
         Point ret;
         ret.x = (*this).x - v.x;
         ret.y = (*this).y - v.y;
@@ -145,10 +111,9 @@ class Ray {
 public:
     Point start;
     Point dir;
-    Ray(){
 
-    }
-    //setter getter for start and dir
+    Ray(){}
+
     void setStart(Point start) {
         this->start = start;
     }
@@ -175,62 +140,103 @@ public:
 //------------------------------------------------------color----------------------------------------------------------------
 class Color {
 public:
-    double rgb[3];
+    double r,g,b;
     Color() {
-        memset(rgb, 0, sizeof rgb);
+        r = g = b = 0;
     }
 
-    Color(double r, double g, double b) : Color() {
-        rgb[0] = r;
-        rgb[1] = g;
-        rgb[2] = b;
+    Color(double r, double g, double b){
+        this->r = r;
+        this->g = g;
+        this->b = b;
     }
 
-    void clear() {
-        memset(rgb, 0, sizeof rgb);
+    //setter and getter for r,g,b
+    void setR(double r) {
+        this->r = r;
+    }
+
+    void setG(double g) {
+        this->g = g;
+    }
+
+    void setB(double b) {
+        this->b = b;
+    }
+
+    double getR() {
+        return r;
+    }
+
+    double getG() {
+        return g;
+    }
+
+    double getB() {
+        return b;
     }
 
     void clamp() {
-        for(double &x: rgb) {
-            if(x > 1) x = 1;
-            else if(x < 0) x = 0;
-        }
-    }
+        // r = min(1.0 , r);
+        // r = max(0.0 , r);
+        // g = min(1.0 , g);
+        // g = max(0.0 , g);
+        // b = min(1.0 , b);
+        // b = max(0.0 , b);
+        if(r > 1) r = 1;
+        else if(r < 0) r = 0;
 
-    double& operator[] (int id) {
-        return rgb[id];
+
+        if(g > 1) g = 1;
+        else if(g < 0) g = 0;
+
+
+        if(b > 1) b = 1;
+        else if(b < 0) b = 0;
+
     }
 
     Color operator* (const double val) {
         Color ret = *this;
-        for(int i = 0 ; i < 3 ; i++) ret[i] = rgb[i] * val;
+        ret.g = ret.g * val;
+        ret.b = ret.b * val;
+        ret.r = ret.r * val;
         return ret;
     }
 
     Color operator/ (const double val) {
         Color ret = *this;
-        for(int i = 0 ; i < 3 ; i++) ret[i] = rgb[i] / val;
+        ret.r = ret.r / val;
+        ret.g = ret.g / val;
+        ret.b = ret.b / val;
         return ret;
     }
 
     Color operator* (Color col) {
         Color ret = *this;
-        for(int i = 0 ; i < 3 ; i++) ret[i] = rgb[i] * col[i];
+        ret.r = ret.r * col.r;
+        ret.g = ret.g * col.g;
+        ret.b = ret.b * col.b;
         return ret;
     }
 
     Color operator+= (Color col) {
-        for(int i = 0 ; i < 3 ; i++) rgb[i] += col[i];
-        return *this;
+        Color ret = *this;
+        ret.r += col.r;
+        ret.g += col.g;
+        ret.b += col.b;
+        return ret;
     }
 
     friend istream& operator>>(istream& is, Color& color) {
-        for(int i = 0 ; i <3; i++ ) is >> color[i] ;
+        is >> color.r ;
+        is >> color.g ;
+        is >> color.b ;
         return is;
     }
 
     friend ostream& operator<<(ostream& os, Color& c) {
-        os<<" ( "<<c[0]<<" , "<<c[1]<<" , "<<c[2]<<" )";
+        os<<" ( "<<c.r<<" , "<<c.g<<" , "<<c.b<<" )";
         return os;
     }
 
@@ -247,7 +253,7 @@ public:
 
     void draw() {
         glPointSize(5);
-        glColor3f(color[0], color[1], color[2]);
+        glColor3f(color.r, color.g, color.b);
         glBegin(GL_POINTS);
         glVertex3f(light_pos.x, light_pos.y, light_pos.z);
         glEnd();
@@ -301,7 +307,7 @@ class util {
     }
 
     static Point get_reflection_vector(Point &L, Point &N) {
-        Point ret = N.mul(2.0).mul(dot(L, N)).sub(L);
+        Point ret = N * 2 * dot(L, N) - L;
         ret.normalize();
         return ret;
     }
@@ -310,8 +316,11 @@ class util {
         double eta = 1.5;
         double N_dot_I = dot(N, I);
         double k = 1.0 - eta * eta * (1.0 - N_dot_I * N_dot_I);
-
-        return I.mul(eta).sub(N.mul(N_dot_I * eta - sqrt(1 - k)));
+        // if(k < 0) {
+        //     I = I * -1;
+        //     return get_reflection_vector(I, N);
+        // }
+        return I * eta - N * (eta * N_dot_I - sqrt(1 - k));
     }
 
     //following 4 func are for triangle class
@@ -412,7 +421,7 @@ public:
         Object *nearest = this;
         Color reflected_color;
         Point R = util::get_reflection_vector(L, N);
-        Ray reflecting_ray(intersection_point.add(R.mul(EPS)), R);//without adding R*EPS , the image doesnt become smooth
+        Ray reflecting_ray(intersection_point + R * EPS, R);//without adding R*EPS , the image doesnt become smooth
 
         double reflected_t_min = INF;
 
@@ -430,7 +439,10 @@ public:
         //perform reflection.before that , clear the reflected_color since it has been modified in the previous iteration of for loop.
         //append the reflected_color to original color.
         if(reflected_t_min != INF) {
-            reflected_color.clear();
+            //clearing the color
+            reflected_color.setR(0.0);
+            reflected_color.setG(0.0);
+            reflected_color.setB(0.0);
             nearest->intersect(reflecting_ray, reflected_color, level + 1);
             color += reflected_color * reflection_coEfficient;
         }
@@ -441,7 +453,7 @@ public:
         Object *nearest = this;
         Color refracted_color;
         Point R = util::get_refraction_vector(L, N, intersection_point);
-        Ray refracting_ray(intersection_point.add(R.mul(EPS)), R);
+        Ray refracting_ray(intersection_point + R * EPS, R);
 
         double refracted_t_min = INF;
         for(Object *object: objects) {
@@ -452,7 +464,10 @@ public:
             }
         }
         if(refracted_t_min != INF) {
-            refracted_color.clear();
+            //clearing color
+            refracted_color.setR(0.0);
+            refracted_color.setG(0.0);
+            refracted_color.setB(0.0);
             nearest->intersect(refracting_ray, refracted_color, level + 1);
             color += refracted_color * (reflection_coEfficient/2.0);
         }
@@ -462,7 +477,7 @@ public:
         double t_min = get_intersecting_t(ray);
         if(level == 0) return t_min;
 
-        Point intersection_point = ray.start.add(ray.dir.mul(t_min));
+        Point intersection_point = ray.start + ray.dir * t_min;
         Color intersection_point_color = get_object_color(intersection_point);
 
         color = intersection_point_color * ambient_coEfficient;
@@ -473,7 +488,7 @@ public:
 
         for(Light light: lights) {
 
-            Ray light_to_point_ray(light.light_pos, (intersection_point.sub(light.light_pos)));
+            Ray light_to_point_ray(light.light_pos, (intersection_point - light.light_pos));
 
             //check for spotlight
             if(light.is_spotlight){
@@ -488,10 +503,10 @@ public:
 
             double t_tgt = util::distance(intersection_point, light_to_point_ray.start) - EPS;
 
-            Point L = light.light_pos.sub(intersection_point);
+            Point L = light.light_pos - intersection_point;
             Point R = util::get_reflection_vector(L, N);
             Point eye = Point(cam_pos_x , cam_pos_y , cam_pos_z);//default camera position
-            Point V = eye.sub(intersection_point);
+            Point V = eye - intersection_point;
 
             L.normalize();
             V.normalize();
@@ -511,7 +526,7 @@ public:
 
         if(level == reflection_level) return t_min;
 
-        Point L = ray.dir.mul(-1.0);
+        Point L = ray.dir* -1;
         perform_reflection(L, N, intersection_point, color, level);
         if(REFRACTION_ON) perform_refraction(ray.dir, N, intersection_point, color, level);
         return t_min;
@@ -546,7 +561,7 @@ public:
         }
         //draw quads using generated points
         for(int i = 0 ; i < stacks ; i++) {
-            glColor3f(object_color[0], object_color[1], object_color[2]);
+            glColor3f(object_color.getR(), object_color.getG(), object_color.getB());
             for (int j = 0; j < slices; j++) {
 
                 glPushMatrix();
@@ -573,7 +588,7 @@ public:
     }
 
     double get_intersecting_t(Ray &ray) override {
-        Point pt = center.sub(ray.start);
+        Point pt = center - ray.start;
         double b = -2.0 * util::dot(ray.dir, pt );
         double c = util::dot(pt, pt) - radius * radius;
         double D = b * b - 4 * c;
@@ -591,7 +606,7 @@ public:
     }
 
     Point get_normal(Point intersection_point) override {
-        Point normal = intersection_point.sub(center);
+        Point normal = intersection_point - center;
         normal.normalize();
         return normal;
     }
@@ -627,11 +642,11 @@ class Equation {
     double get_x() {
         return (-b * e * i + b * f * g + c * d * i - c * f * h - a * d * g + a * e * h) / (a * e * h - a * d * g + b * d * f - b * e * i + c * e * g - c * d * h);
     }
-    
+
     double get_y() {
         return (a * f * i - a * e * g - b * d * i + b * e * h + c * d * g - c * f * h) / (a * e * h - a * d * g + b * d * f - b * e * i + c * e * g - c * d * h);
     }
-    
+
     double get_z() {
         return (a * e * g - a * d * h - b * d * g + b * e * h + c * d * h - c * e * g) / (a * e * h - a * d * g + b * d * f - b * e * i + c * e * g - c * d * h);
     }
@@ -640,7 +655,7 @@ class Equation {
 class Triangle: public Object {
     Point A, B, C;
 public:
-    
+
     Triangle(Point &a, Point &b, Point &c) {
         A = a;
         B = b;
@@ -649,7 +664,7 @@ public:
 
     void draw() override {
         glBegin(GL_TRIANGLES);
-        glColor3f(object_color[0], object_color[1], object_color[2]);
+        glColor3f(object_color.getR(), object_color.getG(), object_color.getB());
         glVertex3f(A.x, A.y, A.z);
         glVertex3f(B.x, B.y, B.z);
         glVertex3f(C.x, C.y, C.z);
@@ -657,7 +672,7 @@ public:
     }
 
     Point get_normal(Point pt) override {
-        Point normal =  util::cross( B.sub(A), C.sub(A));
+        Point normal =  util::cross( B - A, C - A);
         normal.normalize();
         return normal;
     }
@@ -721,7 +736,7 @@ class General_Surface : public Object {
 
     bool is_inside(Point &point) override {
         double lns[] = {length, width, height};
-        
+
         for(int idx = 0; idx < 3; idx++) {
             if(fabs(lns[idx]) < EPS) continue;
             if(idx == 0){
@@ -760,14 +775,14 @@ class General_Surface : public Object {
         if(t1 > 0)
         {
             //cout << "t1 paise :'(" << endl;
-            Point kache = ray.start.add(ray.dir.mul(t1));
+            Point kache = ray.start + ray.dir * t1;
             if(is_inside(kache)) return t1;
         }
 
         if(t2 > 0)
         {
             //cout << "t2 paise :'(" << endl;
-            Point dure = ray.start.add(ray.dir.mul(t2));
+            Point dure = ray.start + ray.dir * t2;
             if(is_inside(dure)) return t2;
         }
 
@@ -830,7 +845,7 @@ public:
         if(ray.dir.z == 0) return -1;
 
         double t = - ray.start.z / ray.dir.z;
-        Point pt = ray.start.add(ray.dir.mul(t));
+        Point pt = ray.start + ray.dir * t;
         if(t < 0) return -1;
         if(pt.x < -width_from_center.x || pt.x > width_from_center.x) return -1;
         if(pt.y < -width_from_center.y || pt.y > width_from_center.y) return -1;
@@ -876,69 +891,69 @@ public:
     }
 
     void look_left() {
-        Point rr = r.mul(cos(-rotate_angle)).sub(l.mul(sin(-rotate_angle)));
-        Point ll = r.mul(sin(-rotate_angle)).add(l.mul(cos(-rotate_angle)));
+        Point rr = r * cos(-rotate_angle) - l * sin(-rotate_angle);
+        Point ll = r * sin(-rotate_angle) + l * cos(-rotate_angle);
         r = rr;
         l = ll;
     }
 
     void look_right() {
-        Point rr = r.mul(cos(rotate_angle)).sub(l.mul(sin(rotate_angle)));
-        Point ll = r.mul(sin(rotate_angle)).add(l.mul(cos(rotate_angle)));
+        Point rr = r * cos(rotate_angle) - l * sin(rotate_angle);
+        Point ll = r * sin(rotate_angle) + l * cos(rotate_angle);
         r = rr;
         l = ll;
     }
 
     void look_up() {
-        Point uu = u.mul(cos(-rotate_angle)).add(l.mul(sin(-rotate_angle)));
-        Point ll = u.mul(sin(-rotate_angle)).mul(-1).add(l.mul(cos(-rotate_angle)));
+        Point uu = u * cos(-rotate_angle) + l * sin(-rotate_angle);
+        Point ll = u * sin(-rotate_angle)*-1 + l * cos(-rotate_angle);
         u = uu;
         l = ll;
     }
 
      void look_down() {
-        Point uu = u.mul(cos(rotate_angle)).add(l.mul(sin(rotate_angle)));
-        Point ll = u.mul(sin(rotate_angle)).mul(-1).add(l.mul(cos(rotate_angle)));
+        Point uu = u * cos(rotate_angle) + l * sin(rotate_angle);
+        Point ll = u * sin(rotate_angle)*-1 + l * cos(rotate_angle);
         u = uu;
         l = ll;
     }
 
     void tilt_clockwise() {
-        Point uu = u.mul(cos(rotate_angle)).sub(r.mul(sin(rotate_angle)));
-        Point rr = u.mul(sin(rotate_angle)).add(r.mul(cos(rotate_angle)));
+        Point uu = u * cos(rotate_angle) - r * sin(rotate_angle);
+        Point rr = u * sin(rotate_angle) + r * cos(rotate_angle);
         u = uu;
         r = rr;
     }
 
     void tilt_counter_clockwise() {
-        Point uu = u.mul(cos(-rotate_angle)).sub(r.mul(sin(-rotate_angle)));
-        Point rr = u.mul(sin(-rotate_angle)).add(r.mul(cos(-rotate_angle)));
+        Point uu = u * cos(-rotate_angle) - r * sin(-rotate_angle);
+        Point rr = u * sin(-rotate_angle) + r * cos(-rotate_angle);
         u = uu;
         r = rr;
     }
 
     void up_arrow(){
-        pos = pos.add(l.mul(camera_speed));
+        pos = pos + l * camera_speed;
     }
 
     void down_arrow(){
-        pos = pos.sub(l.mul(camera_speed));
+        pos = pos - l * camera_speed;
     }
 
     void right_arrow(){
-        pos = pos.add(r.mul(camera_speed));
+        pos = pos + r * camera_speed;
     }
 
     void left_arrow(){
-        pos = pos.sub(r.mul(camera_speed));
+        pos = pos - r * camera_speed;
     }
 
     void page_up(){
-        pos = pos.add(u.mul(camera_speed));
+        pos = pos + u * camera_speed;
     }
 
     void page_down(){
-        pos = pos.sub(u.mul(camera_speed));
+        pos = pos - u * camera_speed;
     }
 
 };

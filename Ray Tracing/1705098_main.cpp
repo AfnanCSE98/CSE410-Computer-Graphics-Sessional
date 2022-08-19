@@ -19,9 +19,9 @@ void sendRaysThroughAllPixels(Point &top_left , double du , double dv , bitmap_i
     for(int i = 0 ; i < pixels ; i++) {
         for(int j = 0 ; j < pixels; j++) {
 
-            Point current_pixel = top_left + camera.r * du * j  - camera.u * dv * i ;
+            Point current_pixel = top_left.add(camera.r.mul(du * j)).sub(camera.u.mul(dv * i)) ;
 
-            Ray ray(camera.pos, current_pixel - camera.pos);
+            Ray ray(camera.pos, current_pixel.sub(camera.pos));
 
             double t_min = INF;
             for(Object *object: objects) {
@@ -49,10 +49,10 @@ void capture() {
     image.clear();
 
     double plane_distance = (window_height/2.0) / tan( (view_angle * PI)/(180.0 *2.0) );
-    Point top_left = camera.pos + camera.l*plane_distance - camera.r*window_width/2 + camera.u*window_height/2;
+    Point top_left = camera.pos.add(camera.l.mul(plane_distance)).sub(camera.r.mul(window_width*0.5)).add(camera.u.mul(window_height*0.5));
     double du = window_width/pixels;
     double dv = window_height/pixels;
-    top_left = top_left + camera.r * 0.5 * du - camera.u * 0.5 * dv;
+    top_left = top_left.add(camera.r.mul(0.5 * du)).sub(camera.u.mul(0.5 * dv));
     
     sendRaysThroughAllPixels(top_left, du, dv, image);
     
