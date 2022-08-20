@@ -1,6 +1,10 @@
 import cv2
 import numpy as np
 import glob
+import shutil
+# for filename in glob.glob('*.bmp'):
+#     for i in range(5):
+#         shutil.copy2(filename, filename + "copy_" + str(i) + '.bmp')
 
 img_array = []
 for filename in glob.glob('*.bmp'):

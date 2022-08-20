@@ -31,6 +31,7 @@ static vector<Light>lights;
 const int floor_width = 1000;
 const int tile_width = 20;
 
+
 //------------------------------------------------------------------------------point----------------------------------------------------------------------------------------------
 
 class Point {
@@ -836,7 +837,7 @@ public:
         aspectRatio = 1;
         nearPlane = 1;
         farPlane = 1000;
-        camera_speed = 5;
+        camera_speed = 1;
         rotate_angle = camera_speed * PI / 180;
     }
 

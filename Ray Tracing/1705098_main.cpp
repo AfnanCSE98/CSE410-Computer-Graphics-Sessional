@@ -11,6 +11,8 @@ const double view_angle = 80;
 int numCaptures = 0;
 int video_demo = 0;
 
+int sl_x , sl_y;
+
 Camera camera;
 
 void sendRaysThroughAllPixels(Point &top_left , double du , double dv , bitmap_image &image){
@@ -62,10 +64,12 @@ void capture() {
 }
 
 void onkchobi(){
-    for(int i = 0 ; i < 10 ; i++) {
+   // for(int i = 0 ; i < 8 ; i++) {
       capture();
-    }
+      
+   // }
 }
+
 void keyboardListener(unsigned char key, int x,int y){
 
     switch(key){
@@ -257,7 +261,7 @@ void load_data() {
     in>>total_spotlights;
     for(int i=0 ; i<total_spotlights ; i++){
         Light light;
-        in>>light.light_pos;
+        in>>light.light_pos;sl_x = light.light_pos.x;sl_y = light.light_pos.y;
         in>>light.color;
 
         Point dir;double cutoff_angle;
