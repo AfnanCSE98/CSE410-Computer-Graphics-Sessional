@@ -204,7 +204,7 @@ class Light  {
 public:
     Point light_pos;
     Color color;
-    bool is_spotlight;
+    bool is_spotlight = false;
     Point dir;
     double cutoff_angle;
 
@@ -251,7 +251,7 @@ class util {
     //get angle betwen two point
     static double get_angle(Point p1, Point p2) {
         double ret = dot(p1, p2);
-        return acos(ret);
+        return acos(ret)*180.0/PI;
     }
 
     static Point cross(Point v1, Point v2) {
@@ -442,10 +442,10 @@ public:
 
             //check for spotlight
             if(light.is_spotlight){
-                double ang = util::get_angle(light_to_point_ray.dir, light.dir) + 3;
-                double cut_ang = light.get_cutoff_angle() + 3;
+                double ang = util::get_angle(light_to_point_ray.dir, light.dir) ;
+                double cut_ang = light.get_cutoff_angle() ;
                 //cout<<ang<<" "<<cut_ang<<endl;
-                if(ang < cut_ang) {
+                if(ang < -cut_ang || ang > cut_ang) {
                     //cout<<ang<<" "<<cut_ang<<endl;
                     continue;
                 }
