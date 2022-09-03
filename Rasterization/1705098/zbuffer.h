@@ -48,7 +48,7 @@ public:
             cin >> p3;
             triangles.push_back(Triangle(p1, p2, p3));
             if (cin.eof()) {break;}
-        
+
         }
         fclose(fp);
 
@@ -81,7 +81,7 @@ public:
         fclose(fp);
 
         cout<<"SW:"<<screenWidth<<" SH:"<<screenHeight<<" xLim:"<<xLimit<<" yLim:"<<yLimit<<" zFront:"<<zFront<<" zRear:"<<zRear<<std::endl;
-  
+
     }
 
     void load_buffers(){
@@ -135,7 +135,7 @@ public:
 
     void load_z_x(pair<Vector, Vector> e1 , pair<Vector, Vector> e2 ,double yScanline
                     , double& za,double& zb,double& xa,double& xb){
-            
+
         double m1 = (yScanline - e1.first.y) / (e1.second.y - e1.first.y);
         za = e1.first.z + m1 * (e1.second.z - e1.first.z);
 
@@ -153,7 +153,7 @@ public:
             bottomScanLine  = round((yLimit - max(t.getMin_Y(), -yLimit)) / dy);
 
             double yScanline = min(t.getMax_Y(), yLimit);
-             
+
             for(int row = topScanLine; row<bottomScanLine ; row++){
 
                 auto edges = getIntersectingEdges(yScanline, t);
@@ -168,8 +168,8 @@ public:
                 double za,zb,xa,xb=9;
                 load_z_x(e1 , e2 , yScanline , za , zb , xa , xb);
                 //cout<<"xb = ";
-                
-                
+
+
                 // keeping smaller valu in xa and za
                 if (xb < xa) {
                     double temp = xa;
@@ -196,7 +196,7 @@ public:
                         //setZBufferValue
                         zBuffer.at(row).at(col) = zp;
                         //setPixelBufferVal
-                        pixelBuffer.at(row).at(col) = t.get_color();
+                        //pixelBuffer.at(row).at(col) = t.get_color();
 
                     }
                     zp = zp + inc;
@@ -217,6 +217,13 @@ public:
                 }
             }
             osZBuffer<<'\n';
+        }
+
+        for (int i = 0; i < screenWidth; i++) {
+         for (int j = 0; j < screenHeight; j++) {
+              cout<<pixelBuffer[i][j].get_r()<<" "<<pixelBuffer[i][j].get_g()<<" "<<pixelBuffer[i][j].get_b()<<endl;
+         }
+         cout<<endl;
         }
 
         //bitmap img
